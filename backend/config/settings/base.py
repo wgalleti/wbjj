@@ -31,16 +31,28 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',  # Django Unfold deve vir antes do admin
+    'unfold.contrib.filters',  # Filtros aprimorados
+    'unfold.contrib.forms',    # Formulários aprimorados
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Local apps
+    'apps.core',
+    'apps.tenants',
+    'apps.authentication',
+    'apps.students',
+    'apps.payments',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'apps.core.middleware.PermissionsPolicyMiddleware',  # Middleware para Permissions Policy
+    'apps.core.middleware.SecurityHeadersMiddleware',    # Middleware para cabeçalhos de segurança
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -80,6 +92,11 @@ DATABASES = {
     }
 }
 
+# Configurações adicionais do admin Django
+ADMIN_SITE_HEADER = "Zenith Jiu Jitsu - Administração"
+ADMIN_SITE_TITLE = "Zenith JJ Admin"
+ADMIN_INDEX_TITLE = "Painel Administrativo"
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -99,13 +116,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Custom User Model
+AUTH_USER_MODEL = 'authentication.User'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-BR'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Cuiaba'
 
 USE_I18N = True
 
@@ -116,8 +136,61 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR.parent / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Security Headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Mudando para SAMEORIGIN para permitir iframe no admin
+
+# Django Unfold Configuration
+UNFOLD = {
+    "SITE_TITLE": "Zenith Jiu Jitsu",
+    "SITE_HEADER": "Zenith JJ Admin",
+    "SITE_URL": "/",
+    "SITE_LOGO": "/static/images/logo.png",
+    "SITE_ICON": {
+        "light": "/static/images/logo.png",
+        "dark": "/static/images/logo.png",
+    },
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/png",
+            "href": lambda request: request.build_absolute_uri("/static/images/logo.png"),
+        },
+    ],
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "ENVIRONMENT": None,
+    "COLORS": {
+        "primary": {
+            "50": "255 255 240",   # Amarelo muito claro
+            "100": "254 249 195",  # Amarelo claro
+            "200": "254 240 138",  # Amarelo suave
+            "300": "253 224 71",   # Amarelo médio
+            "400": "250 204 21",   # Amarelo vibrante
+            "500": "234 179 8",    # Amarelo principal (como no logo)
+            "600": "202 138 4",    # Amarelo escuro
+            "700": "161 98 7",     # Amarelo mais escuro
+            "800": "133 77 14",    # Amarelo muito escuro
+            "900": "113 63 18",    # Amarelo quase laranja
+            "950": "66 32 6"       # Amarelo mais escuro
+        }
+    },
+    "THEME": "light",  # Define tema padrão como claro para destacar as cores amarelo/azul
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+        # Removendo navegação customizada temporariamente para resolver problema
+        # "navigation": [...]
+    }
+}

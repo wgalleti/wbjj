@@ -21,9 +21,10 @@
 
 ### Sprint 1-2: Decisões e Setup Inicial
 
-#### T001 - Setup Repositório e Ambiente 🔴 ⚡
+#### T001 - Setup Repositório e Ambiente ✅ ⚡
 **Tempo**: 4 horas  
 **Valor**: R$ 480  
+**Status**: **COMPLETA**
 **Descrição**: 
 - Configurar monorepo com estrutura backend/frontend/mobile
 - Setup Docker Compose para desenvolvimento
@@ -32,45 +33,77 @@
 
 **Dependências**: Nenhuma  
 **Critérios de Aceitação**:
-- [ ] Repositório configurado com estrutura de pastas
-- [ ] Docker Compose funcionando para todos os ambientes
-- [ ] README.md com instruções de setup
+- [x] Repositório configurado com estrutura de pastas
+- [x] Backend Django configurado com UV
+- [x] Documentação completa em SETUP_SCRIPTS.md
+- [x] Pre-commit hooks configurados
+- [x] Django check funcionando
 
 ---
 
-#### T002 - Modelagem do Banco de Dados 🔴 📊
+#### T002 - Models Django e Migrations ✅ 📊
 **Tempo**: 16 horas (2 dias)  
 **Valor**: R$ 1.920  
+**Status**: **COMPLETA**
 **Descrição**:
-- Modelar entidades principais (Tenant, User, Student, Payment, etc.)
-- Definir relacionamentos e constraints
-- Criar scripts de migração inicial
-- Documentar estratégia multitenancy
+- Implementar Abstract Base Models (BaseModel, TimestampedModel, SoftDeleteModel)
+- Criar models principais: Tenant, User personalizado, Student, Payment, etc.
+- Configurar relacionamentos e constraints otimizados
+- Gerar migrations Django com índices de performance
+- Configurar Django Admin completo com inlines e fieldsets
+- Implementar comando seed_data para desenvolvimento
 
 **Dependências**: T001  
 **Critérios de Aceitação**:
-- [ ] Diagrama ER completo
-- [ ] Scripts SQL de criação
-- [ ] Documentação da estratégia multitenancy
-- [ ] Dados de seed para desenvolvimento
+- [x] BaseModel abstrato com UUID, timestamps e soft delete
+- [x] User personalizado (email login, roles, multitenancy ready)
+- [x] Models: Tenant, Student, Graduation, Attendance, Invoice, Payment
+- [x] Django Admin configurado com filtros e busca
+- [x] Migrations geradas e validadas (django check ✅)
+- [x] Comando `python manage.py seed_data` funcionando
+- [x] Documentação em T002_MODELS_DJANGO.md
 
 ---
 
-#### T003 - Setup Backend Django 🔴 📊
+#### T002B - Docker Compose e Banco de Dados ✅ 🏗️
+**Tempo**: 6 horas (0,75 dias)  
+**Valor**: R$ 720  
+**Status**: **COMPLETA**
+**Descrição**:
+- Configurar Docker Compose com PostgreSQL e Redis
+- Criar arquivos de ambiente (.env) para desenvolvimento
+- Implementar scripts de inicialização do banco
+- Aplicar migrations e popular dados de seed
+- Documentar comandos de desenvolvimento
+
+**Dependências**: T002  
+**Critérios de Aceitação**:
+- [x] Docker Compose funcionando (PostgreSQL + Redis)
+- [x] Migrations aplicadas automaticamente
+- [x] Dados de seed carregados
+- [x] Scripts de desenvolvimento documentados
+- [x] Banco acessível para Django
+- [x] Documentação completa em DOCKER_DEVELOPMENT.md
+
+---
+
+#### T003 - Setup Backend Django (REST API) 🔴 📊
 **Tempo**: 12 horas (1,5 dias)  
 **Valor**: R$ 1.440  
 **Descrição**:
-- Configurar projeto Django com Django Rest Framework
-- Implementar configurações para multitenancy
-- Setup PostgreSQL com schemas por tenant
-- Configurar autenticação JWT
+- Configurar Django REST Framework e serializers
+- Implementar ViewSets e routers para APIs
+- Configurar CORS e permissões básicas
+- Setup documentação automática (OpenAPI/Swagger)
+- Implementar endpoints de healthcheck e status
 
-**Dependências**: T001, T002  
+**Dependências**: T002B  
 **Critérios de Aceitação**:
-- [ ] Projeto Django funcionando
-- [ ] PostgreSQL conectado
-- [ ] Estrutura multitenancy básica
-- [ ] Endpoints de healthcheck
+- [ ] Django REST Framework configurado
+- [ ] APIs básicas funcionando (CRUD models)
+- [ ] Documentação OpenAPI automática
+- [ ] CORS configurado para frontend
+- [ ] Endpoints de healthcheck respondendo
 
 ---
 
@@ -79,7 +112,7 @@
 **Valor**: R$ 2.880  
 **Descrição**:
 - Implementar middleware de detecção de tenant
-- Criar sistema de schemas dinâmicos
+- Criar sistema de schemas dinâmicos PostgreSQL
 - Implementar isolamento de dados por tenant
 - Testes de segurança de isolamento
 
@@ -475,20 +508,20 @@
 ## RESUMO FINANCEIRO
 
 ### Por Fase
-- **Fase 1 - Fundação**: R$ 9.120 (76 horas)
+- **Fase 1 - Fundação**: R$ 9.840 (82 horas)
 - **Fase 2 - Frontend**: R$ 10.320 (86 horas)  
 - **Fase 3 - Mobile**: R$ 10.080 (84 horas)
 - **Fase 4 - Finalização**: R$ 8.160 (68 horas)
 
 ### Total do Projeto
-- **Tempo Total**: 314 horas (aprox. 8 semanas de desenvolvimento)
-- **Valor Total**: R$ 37.680
+- **Tempo Total**: 320 horas (aprox. 8 semanas de desenvolvimento)
+- **Valor Total**: R$ 38.400
 - **Prazo**: 18 semanas (incluindo testes e ajustes)
 
 ### Cronograma de Pagamento Sugerido
-- **30% na aprovação**: R$ 11.304
-- **40% na entrega do MVP**: R$ 15.072  
-- **30% no go-live**: R$ 11.304
+- **30% na aprovação**: R$ 11.520
+- **40% na entrega do MVP**: R$ 15.360  
+- **30% no go-live**: R$ 11.520
 
 ---
 
@@ -524,4 +557,8 @@
    - Mudanças de escopo podem impactar significativamente
    - Testes com academia piloto podem gerar retrabalho
 
-4. **Próxima ação**: Marcar T001 como "in-progress" e começar setup do repositório. 
+4. **Status Atual**: 
+   - ✅ **T001 Completa**: Setup repositório e ambiente Django
+   - ✅ **T002 Completa**: Models Django e migrations
+   - ✅ **T002B Completa**: Docker Compose e banco de dados
+   - 📋 **Próxima**: T003 - Setup Backend Django (REST API) 

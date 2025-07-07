@@ -1,0 +1,159 @@
+/* Custom CSS for Zenith Jiu Jitsu Admin */
+/* Cores amarelo e azul inspiradas no logo */
+
+:root {
+    --zenith-yellow-light: #FFFBF0;
+    --zenith-yellow: #EAB308;
+    --zenith-yellow-dark: #CA8A04;
+    --zenith-blue: #1E40AF;
+    --zenith-blue-dark: #1E3A8A;
+    --zenith-blue-light: #3B82F6;
+}
+
+/* Logo customizations */
+.logo img {
+    max-height: 40px !important;
+    width: auto !important;
+    margin-right: 10px;
+}
+
+/* Sidebar enhancements */
+.sidebar {
+    background: linear-gradient(135deg, var(--zenith-blue-dark) 0%, var(--zenith-blue) 100%) !important;
+}
+
+/* Primary button colors */
+.btn-primary, 
+.button-primary,
+[class*="bg-primary"] {
+    background-color: var(--zenith-yellow) !important;
+    border-color: var(--zenith-yellow-dark) !important;
+    color: var(--zenith-blue-dark) !important;
+    font-weight: 600 !important;
+}
+
+.btn-primary:hover,
+.button-primary:hover {
+    background-color: var(--zenith-yellow-dark) !important;
+    border-color: var(--zenith-blue) !important;
+    color: white !important;
+}
+
+/* Links and accent colors */
+a, .link {
+    color: var(--zenith-blue) !important;
+}
+
+a:hover, .link:hover {
+    color: var(--zenith-yellow-dark) !important;
+}
+
+/* Form controls with yellow accents */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--zenith-yellow) !important;
+    box-shadow: 0 0 0 0.2rem rgba(234, 179, 8, 0.25) !important;
+}
+
+/* Table headers */
+.table thead th {
+    background-color: var(--zenith-yellow-light) !important;
+    color: var(--zenith-blue-dark) !important;
+    border-color: var(--zenith-yellow) !important;
+}
+
+/* Active navigation items */
+.nav-link.active,
+.sidebar .nav-link.active {
+    background-color: var(--zenith-yellow) !important;
+    color: var(--zenith-blue-dark) !important;
+    font-weight: 600 !important;
+}
+
+/* Status badges */
+.badge-success {
+    background-color: var(--zenith-yellow) !important;
+    color: var(--zenith-blue-dark) !important;
+}
+
+/* Search box */
+.search-input:focus {
+    border-color: var(--zenith-yellow) !important;
+    box-shadow: 0 0 0 0.2rem rgba(234, 179, 8, 0.25) !important;
+}
+
+/* Header customizations */
+.header {
+    background: linear-gradient(90deg, var(--zenith-blue-dark) 0%, var(--zenith-yellow) 100%) !important;
+}
+
+/* Card accents */
+.card-header {
+    background-color: var(--zenith-yellow-light) !important;
+    border-bottom-color: var(--zenith-yellow) !important;
+}
+
+/* Pagination */
+.page-link {
+    color: var(--zenith-blue) !important;
+}
+
+.page-link:hover {
+    background-color: var(--zenith-yellow-light) !important;
+    border-color: var(--zenith-yellow) !important;
+    color: var(--zenith-blue-dark) !important;
+}
+
+.page-item.active .page-link {
+    background-color: var(--zenith-yellow) !important;
+    border-color: var(--zenith-yellow-dark) !important;
+    color: var(--zenith-blue-dark) !important;
+}
+
+/* Custom logo styling for better visibility */
+[data-theme="light"] .logo img,
+[data-theme="dark"] .logo img {
+    filter: none !important;
+    max-height: 32px !important;
+    margin: 4px 8px 4px 0 !important;
+}
+
+/* Ensure yellow/blue theme is prominent */
+.text-primary {
+    color: var(--zenith-blue) !important;
+}
+
+.bg-primary {
+    background-color: var(--zenith-yellow) !important;
+}
+
+/* Custom styling for better brand recognition */
+.site-header .logo {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.site-header .site-title {
+    color: var(--zenith-yellow) !important;
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 2px rgba(30, 58, 138, 0.3) !important;
+}
+
+/* Additional yellow/blue enhancements */
+.btn-outline-primary {
+    color: var(--zenith-blue) !important;
+    border-color: var(--zenith-yellow) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--zenith-yellow) !important;
+    border-color: var(--zenith-yellow-dark) !important;
+    color: var(--zenith-blue-dark) !important;
+}
+
+/* Alert styling */
+.alert-primary {
+    background-color: var(--zenith-yellow-light) !important;
+    border-color: var(--zenith-yellow) !important;
+    color: var(--zenith-blue-dark) !important;
+} 
