@@ -1,0 +1,63 @@
+# .pre-commit-config.yaml
+repos:
+  # Ruff - Linter extremamente rápido para Python
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Black - Formatação de código
+  - repo: https://github.com/psf/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  # Hooks básicos de qualidade
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  # Django específico
+  - repo: local
+    hooks:
+      - id: django-check
+        name: Django Check
+        entry: python manage.py check
+        language: system
+        pass_filenames: false
+        files: \.py$
+
+      - id: django-migrations-check
+        name: Django Migrations Check
+        entry: python manage.py makemigrations --check --dry-run
+        language: system
+        pass_filenames: false
+        files: \.py$
+
+  # Segurança
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ["-r", "apps/", "-f", "json"]
+        exclude: tests/
+
+  # Documentação
+  - repo: local
+    hooks:
+      - id: spectacular-schema
+        name: Update OpenAPI Schema
+        entry: python manage.py spectacular --file schema.yml
+        language: system
+        pass_filenames: false
+        files: \.py$ 
