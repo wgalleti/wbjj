@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-t@k7#yb5u=)dd4gpb%p*%5^3-&m37xko4g6k8*7pws*bm(l!y&'
+SECRET_KEY = "django-insecure-t@k7#yb5u=)dd4gpb%p*%5^3-&m37xko4g6k8*7pws*bm(l!y&"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,64 +31,63 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'unfold',  # Django Unfold deve vir antes do admin
-    'unfold.contrib.filters',  # Filtros aprimorados
-    'unfold.contrib.forms',    # Formulários aprimorados
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    
+    "unfold",  # Django Unfold deve vir antes do admin
+    "unfold.contrib.filters",  # Filtros aprimorados
+    "unfold.contrib.forms",  # Formulários aprimorados
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Local apps
-    'apps.core',
-    'apps.tenants',
-    'apps.authentication',
-    'apps.students',
-    'apps.payments',
+    "apps.core",
+    "apps.tenants",
+    "apps.authentication",
+    "apps.students",
+    "apps.payments",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'apps.core.middleware.PermissionsPolicyMiddleware',  # Middleware para Permissions Policy
-    'apps.core.middleware.SecurityHeadersMiddleware',    # Middleware para cabeçalhos de segurança
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "apps.core.middleware.PermissionsPolicyMiddleware",  # Middleware para Permissions Policy
+    "apps.core.middleware.SecurityHeadersMiddleware",  # Middleware para cabeçalhos de segurança
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -103,29 +102,29 @@ ADMIN_INDEX_TITLE = "Painel Administrativo"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 # Custom User Model
-AUTH_USER_MODEL = 'authentication.User'
+AUTH_USER_MODEL = "authentication.User"
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'pt-BR'
+LANGUAGE_CODE = "pt-BR"
 
-TIME_ZONE = 'America/Cuiaba'
+TIME_ZONE = "America/Cuiaba"
 
 USE_I18N = True
 
@@ -135,20 +134,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 STATICFILES_DIRS = [
-    BASE_DIR.parent / 'static',
+    BASE_DIR.parent / "static",
 ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'SAMEORIGIN'  # Mudando para SAMEORIGIN para permitir iframe no admin
+X_FRAME_OPTIONS = "SAMEORIGIN"  # Mudando para SAMEORIGIN para permitir iframe no admin
 
 # Django Unfold Configuration
 UNFOLD = {
@@ -165,7 +164,9 @@ UNFOLD = {
             "rel": "icon",
             "sizes": "32x32",
             "type": "image/png",
-            "href": lambda request: request.build_absolute_uri("/static/images/logo.png"),
+            "href": lambda request: request.build_absolute_uri(
+                "/static/images/logo.png"
+            ),
         },
     ],
     "SHOW_HISTORY": True,
@@ -173,17 +174,17 @@ UNFOLD = {
     "ENVIRONMENT": None,
     "COLORS": {
         "primary": {
-            "50": "255 255 240",   # Amarelo muito claro
+            "50": "255 255 240",  # Amarelo muito claro
             "100": "254 249 195",  # Amarelo claro
             "200": "254 240 138",  # Amarelo suave
-            "300": "253 224 71",   # Amarelo médio
-            "400": "250 204 21",   # Amarelo vibrante
-            "500": "234 179 8",    # Amarelo principal (como no logo)
-            "600": "202 138 4",    # Amarelo escuro
-            "700": "161 98 7",     # Amarelo mais escuro
-            "800": "133 77 14",    # Amarelo muito escuro
-            "900": "113 63 18",    # Amarelo quase laranja
-            "950": "66 32 6"       # Amarelo mais escuro
+            "300": "253 224 71",  # Amarelo médio
+            "400": "250 204 21",  # Amarelo vibrante
+            "500": "234 179 8",  # Amarelo principal (como no logo)
+            "600": "202 138 4",  # Amarelo escuro
+            "700": "161 98 7",  # Amarelo mais escuro
+            "800": "133 77 14",  # Amarelo muito escuro
+            "900": "113 63 18",  # Amarelo quase laranja
+            "950": "66 32 6",  # Amarelo mais escuro
         }
     },
     "THEME": "light",  # Define tema padrão como claro para destacar as cores amarelo/azul
@@ -192,5 +193,5 @@ UNFOLD = {
         "show_all_applications": True,
         # Removendo navegação customizada temporariamente para resolver problema
         # "navigation": [...]
-    }
+    },
 }

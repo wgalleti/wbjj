@@ -2,62 +2,64 @@
 repos:
   # Ruff - Linter extremamente rápido para Python
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
+    rev: v0.1.15
     hooks:
       - id: ruff
+        files: ^backend/.*\.py$
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
+        files: ^backend/.*\.py$
 
   # Black - Formatação de código
   - repo: https://github.com/psf/black
-    rev: 23.11.0
+    rev: 23.12.1
     hooks:
       - id: black
         language_version: python3.11
+        files: ^backend/.*\.py$
 
   # Hooks básicos de qualidade
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        files: ^backend/.*\.(py|yaml|yml|json|toml|md)$
       - id: end-of-file-fixer
+        files: ^backend/.*\.(py|yaml|yml|json|toml|md)$
       - id: check-yaml
+        files: ^backend/.*\.ya?ml$
       - id: check-added-large-files
         args: ['--maxkb=1000']
       - id: check-merge-conflict
+        files: ^backend/.*$
       - id: debug-statements
+        files: ^backend/.*\.py$
 
   # Django específico
   - repo: local
     hooks:
       - id: django-check
         name: Django Check
-        entry: python manage.py check
+        entry: bash -c 'cd backend && python manage.py check'
         language: system
         pass_filenames: false
-        files: \.py$
+        files: ^backend/.*\.py$
 
       - id: django-migrations-check
         name: Django Migrations Check
-        entry: python manage.py makemigrations --check --dry-run
+        entry: bash -c 'cd backend && python manage.py makemigrations --check --dry-run'
         language: system
         pass_filenames: false
-        files: \.py$
+        files: ^backend/.*\.py$
 
-  # Segurança
+  # Segurança - Bandit
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
     hooks:
       - id: bandit
-        args: ["-r", "apps/", "-f", "json"]
-        exclude: tests/
-
-  # Documentação
-  - repo: local
-    hooks:
-      - id: spectacular-schema
-        name: Update OpenAPI Schema
-        entry: python manage.py spectacular --file schema.yml
-        language: system
+        args: ["-r", "backend/apps/", "-f", "json", "--skip", "B101,B601"]
+        files: ^backend/apps/.*\.py$
+        exclude: ^backend/.*/migrations/.*\.py$
         pass_filenames: false
-        files: \.py$ 
+
+

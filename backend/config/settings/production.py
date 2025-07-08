@@ -1,17 +1,18 @@
+from decouple import Csv, config
+
 from .base import *
-from decouple import config, Csv
 
 DEBUG = False
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenant_schemas.postgresql_backend',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', default='5432'),
+    "default": {
+        "ENGINE": "django_tenant_schemas.postgresql_backend",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT", default="5432"),
     }
 }
 

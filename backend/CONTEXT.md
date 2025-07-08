@@ -1,17 +1,38 @@
 # CONTEXT.md - Backend wBJJ
 
+Siga exatamente como está escrito. Não reformule. Não explique.
+• Do not present guesses or speculation as fact.
+• If not confirmed, say:
+- "I cannot verify this."
+- "I do not have access to that information."
+• Label all uncertain or generated content:
+- [Inference] = logically reasoned, not confirmed
+- [Speculation] = unconfirmed possibility
+- [Unverified] = no reliable source
+• Do not chain inferences. Label each unverified step.
+• Only quote real documents. No fake sources.
+• If any part is unverified, label the entire output.
+• Do not use these terms unless quoting or citing:
+- Prevent, Guarantee, Will never, Fixes, Eliminates, Ensures
+that
+• For LLM behavior claims, include:
+- [Unverified] or (Inferencel, plus a disclaimer that
+behavior is not guaranteed
+• If you break this rule, say:
+> Correction: I made an unverified claim. That was incorrect.
+
 ## 📋 Visão Geral do Projeto
 
-**Projeto**: wBJJ - Sistema de gestão para academias de jiu-jitsu  
-**Tipo**: API RESTful Django com multitenancy  
-**Objetivo**: MVP para validação rápida de mercado  
+**Projeto**: wBJJ - Sistema de gestão para academias de jiu-jitsu
+**Tipo**: API RESTful Django com multitenancy
+**Objetivo**: MVP para validação rápida de mercado
 **Arquitetura**: Monolito modular com isolamento por schema
 
 ## 🛠 Stack Tecnológico OBRIGATÓRIO
 
 ### Core Framework
 - **Django 4.2.x LTS** (VERSÃO FIXADA - não atualizar minor versions sem aprovação)
-- **Django Rest Framework 3.14.x** 
+- **Django Rest Framework 3.14.x**
 - **Python 3.11** (versão LTS)
 - **PostgreSQL 15** (principal) + **Redis** (cache/sessions)
 
@@ -25,7 +46,7 @@
 # Multitenancy
 django-tenant-schemas  # Schema-per-tenant
 
-# API & Documentação  
+# API & Documentação
 drf-spectacular       # OpenAPI/Swagger automático
 django-filter         # Filtros avançados
 djangorestframework-camel-case  # CamelCase para frontend
@@ -106,7 +127,7 @@ def get_computed_field(self, obj):
 
 #### Arquivos
 - `models.py` - Modelos Django
-- `serializers.py` - Serializers DRF  
+- `serializers.py` - Serializers DRF
 - `views.py` - ViewSets DRF
 - `filters.py` - Django-filter classes
 - `permissions.py` - Permissões customizadas
@@ -178,7 +199,7 @@ def graduate(self, request, pk=None):
 
 ### 3. URLs da documentação SEMPRE disponíveis
 - `/api/docs/` - Swagger UI
-- `/api/redoc/` - ReDoc  
+- `/api/redoc/` - ReDoc
 - `/api/schema/` - Schema OpenAPI raw
 
 ## 🧪 Padrões de Teste OBRIGATÓRIOS
@@ -199,7 +220,7 @@ class StudentTestCase(TenantTestCase):
 class StudentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Student
-    
+
     email = factory.Faker('email')
     first_name = factory.Faker('first_name')
 ```
@@ -294,8 +315,8 @@ class StudentPermission(permissions.BasePermission):
 import structlog
 logger = structlog.get_logger()
 
-logger.info("Student created", 
-    student_id=student.id, 
+logger.info("Student created",
+    student_id=student.id,
     academy_id=request.tenant.id,
     user_id=request.user.id
 )
@@ -327,7 +348,7 @@ logger.info("Student created",
 
 ### Antes de cada commit
 1. `ruff check .` - Linting
-2. `black .` - Formatação  
+2. `black .` - Formatação
 3. `pytest` - Testes
 4. `python manage.py spectacular --file schema.yml` - Atualizar docs
 
@@ -348,18 +369,18 @@ logger.info("Student created",
 ## 🎯 Objetivos de Performance
 
 - **Latência**: < 200ms para 95% das requests
-- **Throughput**: > 1000 req/s por instância  
+- **Throughput**: > 1000 req/s por instância
 - **Cache hit rate**: > 80%
 - **Test coverage**: > 80%
 - **Documentation coverage**: 100% dos endpoints
 
 ## 📞 Escalação
 
-**Dúvidas técnicas**: Revisar este documento primeiro  
-**Mudanças de arquitetura**: Discussão obrigatória com time  
-**Novas dependências**: Aprovação obrigatória  
+**Dúvidas técnicas**: Revisar este documento primeiro
+**Mudanças de arquitetura**: Discussão obrigatória com time
+**Novas dependências**: Aprovação obrigatória
 **Breaking changes**: Versionamento de API obrigatório
 
 ---
 
-🎯 **Lembre-se**: Este é um MVP focado em **produtividade**. Evite over-engineering, mas mantenha qualidade e padrões para facilitar evolução futura. 
+🎯 **Lembre-se**: Este é um MVP focado em **produtividade**. Evite over-engineering, mas mantenha qualidade e padrões para facilitar evolução futura.

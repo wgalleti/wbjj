@@ -1,0 +1,200 @@
+{
+    // Python
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.envFile": "${workspaceFolder}/.env",
+
+    // Formatting
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": [
+        "--line-length=88",
+        "--target-version=py311"
+    ],
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnType": false,
+        "editor.formatOnPaste": false,
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.rulers": [88]
+    },
+
+    // Linting
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true,
+    "python.linting.ruffArgs": [
+        "--line-length=88",
+        "--target-version=py311"
+    ],
+
+    // Testing
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests",
+        "--cov=apps",
+        "--cov-report=html",
+        "--cov-report=term-missing"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+
+    // Django
+    "python.analysis.extraPaths": [
+        "./apps"
+    ],
+    "django.templatesDir": "./templates",
+    "django.settingsModule": "config.settings.development",
+
+    // Files
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/__pycache__/**": true,
+        "**/*.pyc": true,
+        "**/*.pyo": true,
+        "**/*.pyd": true,
+        "**/.coverage": true,
+        "**/htmlcov": true,
+        "**/htmlcov/**": true,
+        "**/.pytest_cache": true,
+        "**/.pytest_cache/**": true,
+        "**/.mypy_cache": true,
+        "**/.mypy_cache/**": true,
+        "**/.ruff_cache": true,
+        "**/.ruff_cache/**": true,
+        "**/node_modules": true,
+        "**/node_modules/**": true,
+        "**/.DS_Store": true,
+        "**/staticfiles": true,
+        "**/staticfiles/**": true,
+        "**/media": true,
+        "**/media/**": true,
+        "**/*.egg-info": true,
+        "**/*.egg-info/**": true,
+        "**/.tox": true,
+        "**/.tox/**": true,
+        "**/venv": true,
+        "**/venv/**": true,
+        "**/env": true,
+        "**/env/**": true,
+        "**/.venv": true,
+        "**/.venv/**": true,
+        "**/.env": false,
+        "**/dist": true,
+        "**/dist/**": true,
+        "**/build": true,
+        "**/build/**": true,
+        "**/.git": true,
+        "**/.git/**": true
+    },
+
+    "files.watcherExclude": {
+        "**/__pycache__/**": true,
+        "**/staticfiles/**": true,
+        "**/media/**": true,
+        "**/node_modules/**": true,
+        "**/venv/**": true,
+        "**/env/**": true,
+        "**/.venv/**": true
+    },
+
+    // Search
+    "search.exclude": {
+        "**/__pycache__": true,
+        "**/__pycache__/**": true,
+        "**/staticfiles": true,
+        "**/staticfiles/**": true,
+        "**/media": true,
+        "**/media/**": true,
+        "**/venv": true,
+        "**/venv/**": true,
+        "**/env": true,
+        "**/env/**": true,
+        "**/.venv": true,
+        "**/.venv/**": true,
+        "**/htmlcov": true,
+        "**/htmlcov/**": true,
+        "**/.coverage": true,
+        "**/.pytest_cache": true,
+        "**/.pytest_cache/**": true,
+        "**/.mypy_cache": true,
+        "**/.mypy_cache/**": true,
+        "**/.ruff_cache": true,
+        "**/.ruff_cache/**": true,
+        "**/*.pyc": true,
+        "**/dist": true,
+        "**/dist/**": true,
+        "**/build": true,
+        "**/build/**": true
+    },
+
+    // Editor
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.trimAutoWhitespace": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+
+    // JSON formatting
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2
+    },
+
+    // YAML formatting
+    "[yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2
+    },
+    "[yml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2
+    },
+
+    // Markdown
+    "[markdown]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2,
+        "editor.wordWrap": "on"
+    },
+
+    // Docker
+    "[dockerfile]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    },
+
+    // SQL
+    "[sql]": {
+        "editor.tabSize": 2
+    },
+
+    // Git
+    "git.ignoreLimitWarning": true,
+
+    // Explorer
+    "explorer.excludeGitIgnore": true,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+
+    // Extensions recommendations
+    "extensions.recommendations": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "charliermarsh.ruff",
+        "ms-python.pylint",
+        "ms-python.mypy-type-checker",
+        "batisteo.vscode-django",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "mtxr.sqltools",
+        "bradlc.vscode-tailwindcss"
+    ]
+}

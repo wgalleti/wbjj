@@ -236,4 +236,4 @@ docker-compose logs web | grep "GET /"
 - **Reset**: Use `./scripts/dev-setup.sh --clean` para reset completo
 - **Performance**: Monitor com `docker stats`
 
-🎯 **Dica**: Mantenha o ambiente Docker sempre atualizado para melhor performance! 
+🎯 **Dica**: Mantenha o ambiente Docker sempre atualizado para melhor performance!

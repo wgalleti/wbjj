@@ -98,4 +98,4 @@ volumes:
 
 networks:
   wbjj_network:
-    driver: bridge 
+    driver: bridge

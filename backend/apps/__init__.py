@@ -1,1 +1,1 @@
-# Django Apps Package 
+# Django Apps Package

@@ -1,0 +1,252 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Django: Run Server",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["manage.py", "runserver", "0.0.0.0:8000"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "options": {
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.development"
+                }
+            },
+            "problemMatcher": [],
+            "detail": "Inicia o servidor Django de desenvolvimento"
+        },
+        {
+            "label": "Django: Make Migrations",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["manage.py", "makemigrations"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.development"
+                }
+            },
+            "detail": "Cria novas migrações Django"
+        },
+        {
+            "label": "Django: Migrate",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["manage.py", "migrate"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.development"
+                }
+            },
+            "detail": "Aplica migrações do Django"
+        },
+        {
+            "label": "Django: Shell",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["manage.py", "shell"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new"
+            },
+            "options": {
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.development"
+                }
+            },
+            "detail": "Abre o shell Django interativo"
+        },
+        {
+            "label": "Django: Collect Static",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["manage.py", "collectstatic", "--noinput"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.development"
+                }
+            },
+            "detail": "Coleta arquivos estáticos"
+        },
+        {
+            "label": "Code: Format with Black",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["-m", "black", ".", "--line-length=88", "--target-version=py311"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Formata código com Black"
+        },
+        {
+            "label": "Code: Lint with Ruff",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["-m", "ruff", "check", ".", "--line-length=88"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Executa linting com Ruff"
+        },
+        {
+            "label": "Code: Fix with Ruff",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["-m", "ruff", "check", ".", "--fix", "--line-length=88"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Corrige problemas automaticamente com Ruff"
+        },
+        {
+            "label": "Tests: Run All",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["-m", "pytest", "tests/", "--cov=apps", "--cov-report=html", "--cov-report=term-missing", "-v"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "options": {
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.testing"
+                }
+            },
+            "detail": "Executa todos os testes com coverage"
+        },
+        {
+            "label": "Tests: Run Django Tests",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["manage.py", "test"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "options": {
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.testing"
+                }
+            },
+            "detail": "Executa testes do Django"
+        },
+        {
+            "label": "Code: Type Check with MyPy",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["-m", "mypy", "apps/"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Verifica tipos com MyPy"
+        },
+        {
+            "label": "Code: Security Check with Bandit",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": ["-m", "bandit", "-r", "apps/", "-f", "json"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Verifica segurança do código com Bandit"
+        },
+        {
+            "label": "Clean: Remove Python Cache",
+            "type": "shell",
+            "command": "find",
+            "args": [".", "-path", "./.venv", "-prune", "-o", "-type", "d", "-name", "__pycache__", "-exec", "rm", "-rf", "{}", "+", "2>/dev/null", "||", "true"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Remove todas as pastas __pycache__ do projeto"
+        },
+        {
+            "label": "Clean: Remove All Cache Files",
+            "type": "shell",
+            "command": "sh",
+            "args": ["-c", "find . -path './.venv' -prune -o \\( -name '*.pyc' -o -name '*.pyo' -o -name '__pycache__' -o -name '.pytest_cache' -o -name '.mypy_cache' -o -name '.ruff_cache' \\) -exec rm -rf {} + 2>/dev/null || true"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Remove todos os arquivos de cache do Python"
+        },
+        {
+            "label": "Code: Full Check",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Code: Format with Black",
+                "Code: Fix with Ruff",
+                "Code: Type Check with MyPy",
+                "Tests: Run All"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Executa formatação, linting, type check e testes"
+        }
+    ]
+}

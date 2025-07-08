@@ -1,0 +1,45 @@
+{
+    "recommendations": [
+        // Python essentials
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "charliermarsh.ruff",
+        "ms-python.pylint",
+        "ms-python.mypy-type-checker",
+
+        // Django specific
+        "batisteo.vscode-django",
+
+        // Configuration files
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+
+        // Code formatting
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // Database
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+
+        // Git
+        "eamodio.gitlens",
+
+        // Testing
+        "ms-python.pytest",
+
+        // Productivity
+        "ms-vscode.vscode-thunder-client",
+        "humao.rest-client",
+        "ms-python.autopep8",
+        "ms-vscode.live-server"
+    ],
+    "unwantedRecommendations": [
+        "ms-python.flake8",
+        "ms-python.isort"
+    ]
+}

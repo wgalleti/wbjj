@@ -36,7 +36,7 @@ O admin do Django Unfold foi personalizado para refletir a identidade visual da 
 # Django Unfold Configuration
 UNFOLD = {
     "SITE_TITLE": "Zenith Jiu Jitsu",
-    "SITE_HEADER": "Zenith JJ Admin", 
+    "SITE_HEADER": "Zenith JJ Admin",
     "SITE_URL": "/",
     "SITE_LOGO": "images/logo.png",
     "SITE_ICON": {
@@ -46,7 +46,7 @@ UNFOLD = {
     "SITE_FAVICONS": [
         {
             "rel": "icon",
-            "sizes": "32x32", 
+            "sizes": "32x32",
             "type": "image/png",
             "href": lambda request: request.build_absolute_uri("/static/images/logo.png"),
         },
@@ -143,13 +143,13 @@ Execute `python manage.py collectstatic` após qualquer mudança em arquivos est
 - **Combinação**: Alta legibilidade com o contraste amarelo sobre azul
 
 ### Elementos Atualizados:
-✅ **Botões primários**: Amarelo com texto azul escuro  
-✅ **Links**: Azul que muda para amarelo no hover  
-✅ **Sidebar**: Gradiente azul escuro para azul  
-✅ **Formulários**: Bordas amarelas no foco  
-✅ **Tabelas**: Cabeçalhos com fundo amarelo claro  
-✅ **Navegação ativa**: Amarelo com texto azul escuro  
-✅ **Paginação**: Azul com destaque amarelo   
+✅ **Botões primários**: Amarelo com texto azul escuro
+✅ **Links**: Azul que muda para amarelo no hover
+✅ **Sidebar**: Gradiente azul escuro para azul
+✅ **Formulários**: Bordas amarelas no foco
+✅ **Tabelas**: Cabeçalhos com fundo amarelo claro
+✅ **Navegação ativa**: Amarelo com texto azul escuro
+✅ **Paginação**: Azul com destaque amarelo
 
 ---
 
@@ -185,6 +185,6 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'  # Permite iframe no admin
 - `X-Content-Type-Options: nosniff` - Previne MIME sniffing
 
 ### Problemas Resolvidos:
-✅ **Console limpo**: Sem mais erros de permissions policy  
-✅ **Segurança aprimorada**: Cabeçalhos de segurança implementados  
+✅ **Console limpo**: Sem mais erros de permissions policy
+✅ **Segurança aprimorada**: Cabeçalhos de segurança implementados
 ✅ **Admin funcional**: Iframe e eventos de página funcionando corretamente
