@@ -230,6 +230,335 @@ class StudentFactory(factory.django.DjangoModelFactory):
 pytest --cov=apps --cov-report=html --cov-fail-under=80
 ```
 
+## 📏 Padrões de Qualidade de Código OBRIGATÓRIOS
+
+### 1. Estrutura de Imports SEMPRE Seguir Esta Ordem
+```python
+"""
+Docstring do módulo
+"""
+# 1. Standard library imports
+from datetime import timedelta
+from typing import ClassVar
+import uuid
+
+# 2. Third-party imports
+from django.contrib.auth import authenticate
+from rest_framework import serializers
+from drf_spectacular.utils import extend_schema
+
+# 3. Local application imports
+from apps.core.models import BaseModel
+from .models import Student
+```
+
+### 2. Serializers SEMPRE Anotar Atributos de Classe
+```python
+from typing import ClassVar
+
+class StudentSerializer(serializers.ModelSerializer):
+    """Serializer para alunos"""
+
+    # SEMPRE usar ClassVar para atributos mutáveis de classe
+    class Meta:
+        model = Student
+        fields: ClassVar = ["id", "name", "email"]  # ✅ CORRETO
+        read_only_fields: ClassVar = ["id", "created_at"]  # ✅ CORRETO
+        extra_kwargs: ClassVar = {  # ✅ CORRETO
+            "email": {"help_text": "Email único"}
+        }
+```
+
+### 3. ViewSets SEMPRE Anotar Atributos de Configuração
+```python
+from typing import ClassVar
+
+class StudentViewSet(TenantViewSet):
+    """ViewSet para gestão de alunos"""
+
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    # SEMPRE usar ClassVar para listas/dicts de configuração
+    permission_classes: ClassVar = [IsAuthenticated]  # ✅ CORRETO
+    search_fields: ClassVar = ["name", "email"]  # ✅ CORRETO
+    filterset_fields: ClassVar = ["status", "belt_color"]  # ✅ CORRETO
+    ordering_fields: ClassVar = ["name", "created_at"]  # ✅ CORRETO
+    ordering: ClassVar = ["-created_at"]  # ✅ CORRETO
+    filter_backends: ClassVar = [DjangoFilterBackend, SearchFilter]  # ✅ CORRETO
+```
+
+### 4. Métodos ViewSet SEMPRE Usar self.request
+```python
+class StudentViewSet(TenantViewSet):
+    def perform_create(self, serializer):
+        """SEMPRE usar self.request, nunca request direto"""
+        instructor = (
+            User.objects.get(id=instructor_id)
+            if instructor_id
+            else self.request.user  # ✅ CORRETO
+        )
+        serializer.save(instructor=instructor)
+
+    @action(detail=False, methods=['post'])
+    def custom_action(self, request):
+        """Em @action, usar request é correto"""
+        user = request.user  # ✅ CORRETO (context de @action)
+        return Response({"user": user.id})
+```
+
+### 5. Loops e Unpacking SEMPRE Otimizar
+```python
+# ❌ ERRADO - Variável não usada
+for (path, method, callback) in endpoints:
+    process_callback(callback)
+
+# ✅ CORRETO - Usar underscore para não usadas
+for (path, _, callback) in endpoints:
+    process_callback(callback)
+
+# ❌ ERRADO - Concatenação de listas
+search_fields = getattr(cls, 'search_fields', []) + ['name']
+
+# ✅ CORRETO - Unpacking de iteráveis
+search_fields = [*getattr(cls, 'search_fields', []), 'name']
+```
+
+### 6. Django Admin SEMPRE Anotar Configurações
+```python
+from typing import ClassVar
+
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    """Admin para alunos"""
+
+    # SEMPRE usar ClassVar para configurações do admin
+    list_display: ClassVar = ['name', 'email', 'belt_color']  # ✅ CORRETO
+    list_filter: ClassVar = ['belt_color', 'status']  # ✅ CORRETO
+    search_fields: ClassVar = ['name', 'email']  # ✅ CORRETO
+    readonly_fields: ClassVar = ['id', 'created_at']  # ✅ CORRETO
+```
+
+### 7. SEMPRE Estruturar Arquivos Python
+```python
+"""
+Descrição do módulo
+
+Seguindo padrões estabelecidos no CONTEXT.md:
+- SEMPRE documentar funcionalidades
+- SEMPRE seguir nomenclatura estabelecida
+- SEMPRE usar typing adequado
+"""
+# 1. Imports typing PRIMEIRO quando necessário
+from typing import ClassVar
+
+# 2. Imports standard library
+from datetime import datetime
+import uuid
+
+# 3. Imports third-party
+from django.db import models
+from rest_framework import serializers
+
+# 4. Imports locais
+from apps.core.models import BaseModel
+
+# 5. Código do módulo
+```
+
+### 8. Verificação de Qualidade ANTES de Commit
+```bash
+# SEMPRE executar ANTES de fazer commit:
+
+# 1. Verificação de lint
+ruff check .
+
+# 2. Formatação automática
+ruff format .
+
+# 3. Verificação de tipos (se usando mypy)
+mypy apps/
+
+# 4. Testes
+pytest
+
+# 5. Verificação Django
+python manage.py check
+
+# 6. Verificação de schema OpenAPI
+python manage.py spectacular --file=/dev/null
+```
+
+### 9. Configuração Ruff OBRIGATÓRIA No pyproject.toml
+```toml
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+exclude = [
+    "migrations",
+    "__pycache__",
+    ".git",
+    ".venv",
+]
+
+[tool.ruff.lint]
+# REGRAS OBRIGATÓRIAS - NÃO ALTERAR SEM APROVAÇÃO
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "RUF",  # Ruff-specific rules (RUF012 para ClassVar)
+]
+
+# NUNCA ignorar essas regras críticas
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*.py" = ["E501", "RUF012"]  # Migrations podem ter linha longa
+"__init__.py" = ["F401"]  # Init files podem ter imports não usados
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends"]
+```
+
+### 10. Pre-commit Hooks OBRIGATÓRIOS
+```yaml
+# .pre-commit-config.yaml - SEMPRE configurar
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: django-check
+        name: Django Check
+        entry: python manage.py check
+        language: system
+        pass_filenames: false
+
+      - id: openapi-check
+        name: OpenAPI Schema Check
+        entry: python manage.py spectacular --file=/dev/null
+        language: system
+        pass_filenames: false
+```
+
+### 11. NUNCA Fazer - Erros Comuns
+```python
+# ❌ ERRADO - Request sem self em métodos de ViewSet
+def perform_create(self, serializer):
+    serializer.save(user=request.user)  # ❌ request undefined
+
+# ❌ ERRADO - Imports no meio do arquivo
+SECRET_KEY = "..."
+from datetime import timedelta  # ❌ Import deve estar no topo
+
+# ❌ ERRADO - Atributos de classe sem ClassVar
+class Meta:
+    fields = ["id", "name"]  # ❌ Deve ser fields: ClassVar
+
+# ❌ ERRADO - Variável de loop não usada sem underscore
+for (name, value, extra) in items:  # ❌ extra não é usado
+    process(name, value)
+
+# ❌ ERRADO - Concatenação desnecessária
+items = list1 + ["new_item"]  # ❌ Usar unpacking
+```
+
+### 12. Setup Inicial OBRIGATÓRIO para Qualidade
+```bash
+# 1. Instalar pre-commit no projeto
+uv add --dev pre-commit
+
+# 2. Instalar hooks (executar uma vez)
+pre-commit install
+
+# 3. Executar em todos os arquivos (primeira vez)
+pre-commit run --all-files
+
+# 4. Testar pipeline completo
+ruff check . && ruff format . && python manage.py check && pytest
+```
+
+### 13. Template Padrão para Novos Arquivos
+```python
+"""
+[Nome do módulo] para [funcionalidade]
+
+Seguindo padrões estabelecidos no CONTEXT.md:
+- SEMPRE herdar de TenantViewSet/BaseModelSerializer
+- SEMPRE documentar com drf-spectacular
+- SEMPRE usar typing adequado
+"""
+from typing import ClassVar
+
+from django.db import models
+from rest_framework import serializers
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+from apps.core.models import BaseModel
+from apps.core.serializers import BaseModelSerializer
+
+
+# Implementação segue padrões do CONTEXT.md
+```
+
+### 14. Checklist Rápido de Qualidade ✅
+```markdown
+## Antes de fazer commit, verificar:
+
+### Imports e Estrutura
+- [ ] `from typing import ClassVar` quando necessário
+- [ ] Imports organizados: standard → third-party → local
+- [ ] Docstring no topo do arquivo
+- [ ] Sem imports no meio do código
+
+### Serializers
+- [ ] `fields: ClassVar = [...]`
+- [ ] `read_only_fields: ClassVar = [...]`
+- [ ] `extra_kwargs: ClassVar = {...}`
+
+### ViewSets
+- [ ] `permission_classes: ClassVar = [...]`
+- [ ] `search_fields: ClassVar = [...]`
+- [ ] `filterset_fields: ClassVar = [...]`
+- [ ] `ordering_fields: ClassVar = [...]`
+- [ ] `ordering: ClassVar = [...]`
+- [ ] `filter_backends: ClassVar = [...]`
+- [ ] `self.request.user` (não `request.user`)
+
+### Django Admin
+- [ ] `list_display: ClassVar = [...]`
+- [ ] `list_filter: ClassVar = [...]`
+- [ ] `search_fields: ClassVar = [...]`
+
+### Código Geral
+- [ ] Variáveis não usadas com `_`
+- [ ] Unpacking ao invés de concatenação: `[*list1, item]`
+- [ ] Sem `print()` - usar `logger`
+
+### Pipeline de Qualidade
+- [ ] `ruff check .` = 0 erros
+- [ ] `ruff format .` executado
+- [ ] `python manage.py check` = OK
+- [ ] `python manage.py spectacular --file=/dev/null` = OK
+- [ ] `pytest` passa com cobertura > 80%
+```
+
 ## 🚀 Padrões de Deploy e Configuração
 
 ### 1. Settings modulares OBRIGATÓRIOS
@@ -347,10 +676,11 @@ logger.info("Student created",
 ## ✅ SEMPRE FAZER
 
 ### Antes de cada commit
-1. `ruff check .` - Linting
-2. `black .` - Formatação
-3. `pytest` - Testes
-4. `python manage.py spectacular --file schema.yml` - Atualizar docs
+1. `ruff check .` - Linting (OBRIGATÓRIO - deve passar 100%)
+2. `ruff format .` - Formatação automática
+3. `pytest` - Testes (cobertura > 80%)
+4. `python manage.py check` - Verificação Django
+5. `python manage.py spectacular --file=/dev/null` - Validar OpenAPI
 
 ### Ao criar nova funcionalidade
 1. Model com UUID + auditoria + soft delete

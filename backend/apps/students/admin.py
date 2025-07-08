@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
@@ -9,14 +11,20 @@ class GraduationInline(TabularInline):
     model = Graduation
     extra = 0
     readonly_fields = ["created_at"]
-    fields = ["from_belt", "to_belt", "graduation_date", "instructor", "notes"]
+    fields: ClassVar = [
+        "from_belt",
+        "to_belt",
+        "graduation_date",
+        "instructor",
+        "notes",
+    ]
 
 
 class AttendanceInline(TabularInline):
     model = Attendance
     extra = 0
     readonly_fields = ["created_at"]
-    fields = [
+    fields: ClassVar = [
         "class_date",
         "check_in_time",
         "check_out_time",
@@ -35,7 +43,7 @@ class StudentAdmin(ModelAdmin):
         "enrollment_date",
     ]
     list_filter = ["belt_color", "status", "enrollment_date"]
-    search_fields = [
+    search_fields: ClassVar = [
         "user__first_name",
         "user__last_name",
         "user__email",
@@ -92,7 +100,7 @@ class GraduationAdmin(ModelAdmin):
         "instructor",
     ]
     list_filter = ["from_belt", "to_belt", "graduation_date"]
-    search_fields = ["student__user__first_name", "student__user__last_name"]
+    search_fields: ClassVar = ["student__user__first_name", "student__user__last_name"]
     readonly_fields = ["id", "created_at", "updated_at"]
     list_per_page = 25
 
@@ -138,7 +146,7 @@ class AttendanceAdmin(ModelAdmin):
         "get_class_type_display",
     ]
     list_filter = ["class_date", "class_type"]
-    search_fields = ["student__user__first_name", "student__user__last_name"]
+    search_fields: ClassVar = ["student__user__first_name", "student__user__last_name"]
     readonly_fields = ["id", "created_at", "updated_at"]
     date_hierarchy = "class_date"
     list_per_page = 50

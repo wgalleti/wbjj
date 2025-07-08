@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -40,6 +41,18 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third party apps
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+    "django_filters",
+    "corsheaders",
+    "health_check",
+    "health_check.db",
+    "health_check.cache",
+    "health_check.storage",
+    "health_check.contrib.migrations",
+    "health_check.contrib.psutil",
     # Local apps
     "apps.core",
     "apps.tenants",
@@ -52,6 +65,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "apps.core.middleware.PermissionsPolicyMiddleware",  # Middleware para Permissions Policy
     "apps.core.middleware.SecurityHeadersMiddleware",  # Middleware para cabeçalhos de segurança
+    "corsheaders.middleware.CorsMiddleware",  # CORS middleware deve vir antes do CommonMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -193,5 +207,293 @@ UNFOLD = {
         "show_all_applications": True,
         # Removendo navegação customizada temporariamente para resolver problema
         # "navigation": [...]
+    },
+}
+
+# =============================================================================
+# DJANGO REST FRAMEWORK CONFIGURATION
+# =============================================================================
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
+        "rest_framework.renderers.JSONRenderer",
+    ],
+    "DEFAULT_PARSER_CLASSES": [
+        "djangorestframework_camel_case.parser.CamelCaseJSONParser",
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.MultiPartParser",
+        "rest_framework.parsers.FormParser",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
+    "DEFAULT_VERSION": "v1",
+    "ALLOWED_VERSIONS": ["v1"],
+    "VERSION_PARAM": "version",
+}
+
+# =============================================================================
+# JWT CONFIGURATION
+# =============================================================================
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": None,
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+    "JTI_CLAIM": "jti",
+    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+}
+
+# =============================================================================
+# CORS CONFIGURATION
+# =============================================================================
+
+CORS_ALLOW_CREDENTIALS = True
+
+# CORS Origins - diferentes por ambiente
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Frontend Vue.js development
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",  # Frontend alternativo
+    "http://127.0.0.1:8080",
+    "https://app.wbjj.com",  # Production frontend
+    "https://admin.wbjj.com",  # Production admin
+]
+
+# Headers personalizados permitidos
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "x-tenant-id",  # Header customizado para tenant
+    "x-api-key",  # API key para integrações
+    "x-request-id",  # Request ID para tracking
+    "x-forwarded-for",  # IP forwarding
+    "x-forwarded-proto",  # Protocol forwarding
+    "cache-control",  # Cache headers
+    "pragma",  # Cache headers
+]
+
+# Métodos HTTP permitidos
+CORS_ALLOWED_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Headers expostos para o frontend
+CORS_EXPOSE_HEADERS = [
+    "content-type",
+    "x-tenant-id",
+    "x-total-count",
+    "x-page-count",
+    "x-request-id",
+    "x-ratelimit-limit",
+    "x-ratelimit-remaining",
+    "x-ratelimit-reset",
+]
+
+# Configurações de cache para preflight requests
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 hours
+
+# Configurações de segurança
+CORS_ALLOW_ALL_ORIGINS = False  # NUNCA True em produção
+
+# =============================================================================
+# SPECTACULAR (OpenAPI/Swagger) CONFIGURATION
+# =============================================================================
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "wBJJ API",
+    "DESCRIPTION": """
+    API REST para sistema de gestão de academias de jiu-jitsu com multitenancy.
+
+    ## Autenticação
+    Esta API utiliza JWT (JSON Web Tokens) para autenticação. Para acessar endpoints protegidos:
+
+    1. Faça login em `/api/v1/auth/login/` com email e senha
+    2. Use o token `access` no header: `Authorization: Bearer <token>`
+    3. Tokens expiram em 60 minutos, use `/api/v1/auth/refresh/` para renovar
+
+    ## Multitenancy
+    Cada academia é um tenant separado. Inclua o header `X-Tenant-ID` em todas as requisições
+    para isolar os dados corretamente.
+
+    ## Paginação
+    Listagens retornam 20 itens por página por padrão. Use os parâmetros:
+    - `page`: número da página
+    - `page_size`: itens por página (máximo 100)
+
+    ## Filtros e Busca
+    - `search`: busca textual nos campos configurados
+    - `ordering`: ordenação (use "-" para decrescente)
+    - Filtros específicos por campo conforme documentado
+    """,
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1/",
+    "SCHEMA_PATH_PREFIX_TRIM": True,
+    "SERVERS": [
+        {"url": "http://localhost:8000", "description": "Development server"},
+        {"url": "https://api.wbjj.com", "description": "Production server"},
+    ],
+    "TAGS": [
+        {
+            "name": "authentication",
+            "description": "Autenticação JWT e gestão de usuários",
+        },
+        {"name": "students", "description": "Gestão de alunos, graduações e presenças"},
+        {"name": "payments", "description": "Sistema financeiro e cobrança"},
+        {"name": "tenants", "description": "Gestão de academias e configurações"},
+        {"name": "core", "description": "Funcionalidades base e monitoramento"},
+    ],
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
+    "ENUM_NAME_OVERRIDES": {
+        "BeltChoices": "apps.students.models.Student.BELT_CHOICES",
+        "StatusChoices": "apps.students.models.Student.STATUS_CHOICES",
+    },
+    "PREPROCESSING_HOOKS": [
+        "apps.core.openapi.preprocess_filter_specs",
+    ],
+    "POSTPROCESSING_HOOKS": [
+        "apps.core.openapi.postprocess_schema_enums",
+    ],
+    "EXTENSIONS_INFO": {
+        "x-tenant-header": {
+            "description": "Header para identificação do tenant",
+            "required": True,
+        }
+    },
+    # Configurações de UI
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayRequestDuration": True,
+        "docExpansion": "none",
+        "filter": True,
+        "requestInterceptor": "(request) => { request.headers['X-Tenant-ID'] = localStorage.getItem('tenantId') || ''; return request; }",
+    },
+    "REDOC_UI_SETTINGS": {
+        "expandResponses": "200,201",
+        "requiredPropsFirst": True,
+        "noAutoAuth": False,
+        "hideDownloadButton": False,
+    },
+    # Configurações de segurança
+    "SECURITY": [{"jwtAuth": []}],
+    # Configurações de exemplo
+    "EXAMPLES": {
+        "student_create": {
+            "summary": "Criar novo aluno",
+            "description": "Exemplo de criação de aluno com dados completos",
+            "value": {
+                "email": "joao.silva@email.com",
+                "first_name": "João",
+                "last_name": "Silva",
+                "phone": "(11) 99999-9999",
+                "belt_color": "white",
+                "status": "active",
+                "birth_date": "1990-01-15",
+                "address": "Rua das Flores, 123",
+                "emergency_contact": "Maria Silva - (11) 88888-8888",
+            },
+        },
+        "payment_create": {
+            "summary": "Registrar pagamento",
+            "description": "Exemplo de registro de pagamento de mensalidade",
+            "value": {
+                "invoice": "123e4567-e89b-12d3-a456-426614174000",
+                "payment_method": "123e4567-e89b-12d3-a456-426614174001",
+                "amount": "150.00",
+                "payment_date": "2024-01-15",
+                "notes": "Pagamento de mensalidade - Janeiro 2024",
+            },
+        },
+    },
+}
+
+# =============================================================================
+# HEALTH CHECK CONFIGURATION
+# =============================================================================
+
+HEALTH_CHECK = {
+    "DISK_USAGE_MAX": 90,  # % máximo de uso do disco
+    "MEMORY_MIN": 100,  # MB mínimo de memória livre
+}
+
+# =============================================================================
+# CAMEL CASE CONFIGURATION
+# =============================================================================
+
+# JSON_CAMEL_CASE configuration is handled in REST_FRAMEWORK settings above
+
+# =============================================================================
+# DJANGO FILTER CONFIGURATION
+# =============================================================================
+
+DJANGO_FILTERS = {
+    "DEFAULT_FILTER_OVERRIDES": {
+        "UUIDField": {
+            "filter_class": "django_filters.CharFilter",
+            "extra": lambda f: {
+                "lookup_expr": "iexact",
+            },
+        },
+        "CharField": {
+            "filter_class": "django_filters.CharFilter",
+            "extra": lambda f: {
+                "lookup_expr": "icontains",
+            },
+        },
+        "TextField": {
+            "filter_class": "django_filters.CharFilter",
+            "extra": lambda f: {
+                "lookup_expr": "icontains",
+            },
+        },
     },
 }

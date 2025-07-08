@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 from unfold.decorators import display
@@ -17,7 +19,7 @@ class TenantAdmin(ModelAdmin):
         "created_at",
     ]
     list_filter = ["is_active", "city", "state"]
-    search_fields = ["name", "email", "slug"]
+    search_fields: ClassVar = ["name", "email", "slug"]
     prepopulated_fields = {"slug": ("name",)}
     readonly_fields = ["id", "created_at", "updated_at"]
     list_per_page = 25

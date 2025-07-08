@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.contrib import admin
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
@@ -10,7 +12,7 @@ class PaymentInline(TabularInline):
     model = Payment
     extra = 0
     readonly_fields = ["created_at", "confirmed_date"]
-    fields = [
+    fields: ClassVar = [
         "payment_method",
         "amount",
         "processing_fee",
@@ -24,7 +26,7 @@ class PaymentInline(TabularInline):
 class PaymentMethodAdmin(ModelAdmin):
     list_display = ["name", "code", "get_type_display", "processing_fee", "is_active"]
     list_filter = ["is_online", "is_active"]
-    search_fields = ["name", "code"]
+    search_fields: ClassVar = ["name", "code"]
     readonly_fields = ["id", "created_at", "updated_at"]
     list_per_page = 25
 
@@ -56,7 +58,7 @@ class InvoiceAdmin(ModelAdmin):
         "get_overdue_display",
     ]
     list_filter = ["status", "due_date", "reference_month"]
-    search_fields = ["student__user__first_name", "student__user__last_name"]
+    search_fields: ClassVar = ["student__user__first_name", "student__user__last_name"]
     readonly_fields = ["id", "created_at", "updated_at", "total_amount", "is_overdue"]
     inlines = [PaymentInline]
     date_hierarchy = "due_date"
@@ -109,7 +111,7 @@ class PaymentAdmin(ModelAdmin):
         "get_status_display",
     ]
     list_filter = ["status", "payment_method", "payment_date"]
-    search_fields = [
+    search_fields: ClassVar = [
         "invoice__student__user__first_name",
         "invoice__student__user__last_name",
         "external_id",
