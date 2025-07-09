@@ -7,7 +7,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
 DATABASES = {
     "default": {
-        "ENGINE": "django_tenant_schemas.postgresql_backend",
+        "ENGINE": "django_tenants.postgresql_backend",
         "NAME": config("DB_NAME"),
         "USER": config("DB_USER"),
         "PASSWORD": config("DB_PASSWORD"),

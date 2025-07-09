@@ -1,16 +1,37 @@
+"""
+Modelos para gestão de academias (tenants)
+
+Seguindo padrões estabelecidos no CONTEXT.md:
+- SEMPRE usar schema-per-tenant
+- 1 tenant = 1 PostgreSQL schema
+- Isolamento total automático
+- Migrations aplicadas em todos os schemas
+"""
 from typing import ClassVar
 
 from django.core.validators import RegexValidator
 from django.db import models
+from django_tenants.models import DomainMixin, TenantMixin
 
-from apps.core.models import BaseModel
+from apps.core.models import TimestampedModel
 
 
-class Tenant(BaseModel):
+class Tenant(TenantMixin, TimestampedModel):
     """
-    Model principal para multitenancy
-    Representa uma academia/franquia
+    Modelo principal para multitenancy usando django-tenant-schemas
+
+    Herda de TenantMixin para isolamento automático por schema PostgreSQL.
+    Cada tenant representa uma academia/franquia com schema isolado.
     """
+
+    # Campos obrigatórios do django-tenant-schemas
+    # schema_name é automaticamente adicionado pelo TenantMixin
+    # domain_url é obrigatório para o django-tenants
+    domain_url = models.CharField(
+        max_length=253,
+        help_text="Domínio do tenant (ex: academia-teste.wbjj.com)",
+        unique=True,
+    )
 
     # Identificação
     name = models.CharField(max_length=255, help_text="Nome da academia")
@@ -52,7 +73,10 @@ class Tenant(BaseModel):
 
     # Configurações de negócio
     monthly_fee = models.DecimalField(
-        max_digits=10, decimal_places=2, help_text="Mensalidade padrão"
+        max_digits=10,
+        decimal_places=2,
+        help_text="Mensalidade padrão",
+        default=150.00,  # Valor padrão para testes
     )
     timezone = models.CharField(
         max_length=50, default="America/Sao_Paulo", help_text="Timezone da academia"
@@ -62,11 +86,14 @@ class Tenant(BaseModel):
     founded_date = models.DateField(blank=True, null=True)
     website = models.URLField(blank=True)
 
+    # Status de ativação
+    is_active = models.BooleanField(default=True, help_text="Academia ativa")
+
     class Meta:
-        db_table = "tenants"
         ordering: ClassVar = ["name"]
         indexes: ClassVar = [
             models.Index(fields=["slug"]),
+            models.Index(fields=["schema_name"]),
             models.Index(fields=["is_active"]),
         ]
 
@@ -77,3 +104,25 @@ class Tenant(BaseModel):
     def subdomain_url(self):
         """Retorna URL do subdomínio"""
         return f"https://{self.slug}.wbjj.com"
+
+    def save(self, *args, **kwargs):
+        """
+        Override para garantir que schema_name seja criado baseado no slug
+        """
+        if not self.schema_name:
+            # Gerar schema_name baseado no slug, sanitizado para PostgreSQL
+            self.schema_name = f"tenant_{self.slug}".replace("-", "_")
+
+        # Garantir que domain_url seja definido
+        if not self.domain_url:
+            self.domain_url = f"{self.slug}.wbjj.com"
+
+        super().save(*args, **kwargs)
+
+
+class Domain(DomainMixin):
+    """
+    Model para domínios de tenant (obrigatório pelo django-tenants)
+    """
+
+    pass

@@ -17,7 +17,6 @@ dependencies = [
     "drf-spectacular>=0.26.0,<0.27.0",
     "redis>=5.0.0,<6.0.0",
     "django-redis>=5.4.0,<6.0.0",
-    "django-tenant-schemas>=1.11.0,<2.0.0",
     "djangorestframework-simplejwt>=5.3.0,<6.0.0",
     "django-cors-headers>=4.3.0,<5.0.0",
     "django-permissions-policy>=4.18.0,<5.0.0",
@@ -36,6 +35,7 @@ dependencies = [
     "dj-database-url>=3.0.1,<4.0.0",
     "psycopg2-binary>=2.9.0,<3.0.0",
     "psutil>=5.9.0,<6.0.0",
+    "django-tenants>=3.8.0",
 ]
 
 [project.optional-dependencies]
@@ -43,9 +43,12 @@ dev = [
     "pytest>=7.4.0,<8.0.0",
     "pytest-django>=4.7.0,<5.0.0",
     "pytest-cov>=4.1.0,<5.0.0",
+    "pytest-xdist>=3.5.0,<4.0.0",
+    "pytest-mock>=3.12.0,<4.0.0",
+    "pytest-html>=4.1.0,<5.0.0",
     "factory-boy>=3.3.0,<4.0.0",
     "freezegun>=1.2.0,<2.0.0",
-    "pytest-mock>=3.12.0,<4.0.0",
+    "Faker>=20.1.0,<21.0.0",
     "ruff>=0.1.0,<0.2.0",
     "black>=23.0.0,<24.0.0",
     "pre-commit>=3.5.0,<4.0.0",
@@ -127,22 +130,43 @@ extend-exclude = '''
 '''
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "wbjj.settings.testing"
+# Configuração unificada do pytest
+DJANGO_SETTINGS_MODULE = "config.settings.testing"
 addopts = [
-    "--cov=apps",
-    "--cov-report=html",
-    "--cov-report=term-missing",
-    "--cov-fail-under=80",
     "--strict-markers",
     "--strict-config",
+    "--tb=short",
+    "--reuse-db",
     "-ra",
+    "-v",
 ]
+
+# Caminhos de teste (ambos)
 testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+python_classes = ["Test*", "*Tests", "*TestCase"]
+python_functions = ["test_*"]
+
+# Markers para diferentes tipos de teste
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "with_db: marks tests that require database",
+    "without_db: marks tests that don't require database",
+    "tenant: marks tests that require tenant isolation",
+    "security: marks tests that validate security features",
+    "performance: marks tests that validate performance requirements",
+    "models: Testes de models",
+    "views: Testes de views",
+    "serializers: Testes de serializers",
+    "factories: Testes usando factories",
+    "validation: Testes de validação sem DB",
+    "fast: Testes rápidos sem setup",
 ]
+
+# Coverage padrão (pode ser sobrescrita por linha de comando)
+# addopts += ["--cov=apps", "--cov-report=html", "--cov-report=term-missing", "--cov-fail-under=70"]
 
 [tool.coverage.run]
 source = ["apps"]

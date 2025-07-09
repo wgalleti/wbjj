@@ -20,7 +20,7 @@ else:
 
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django_tenants.postgresql_backend",  # Backend multitenancy
             "NAME": os.environ.get("POSTGRES_DB", "wbjj_dev"),
             "USER": os.environ.get("POSTGRES_USER", "wbjj_user"),
             "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "wbjj_pass"),

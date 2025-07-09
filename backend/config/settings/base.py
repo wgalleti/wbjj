@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Django Tenants DEVE ser o primeiro app para funcionar corretamente
+    "django_tenants",
     "unfold",  # Django Unfold deve vir antes do admin
     "unfold.contrib.filters",  # Filtros aprimorados
     "unfold.contrib.forms",  # Formulários aprimorados
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third party apps
+    "django_extensions",
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
@@ -63,6 +66,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "apps.authentication.middleware.TenantMiddleware",  # PRIMEIRO! - Middleware de tenant OBRIGATÓRIO
     "apps.core.middleware.PermissionsPolicyMiddleware",  # Middleware para Permissions Policy
     "apps.core.middleware.SecurityHeadersMiddleware",  # Middleware para cabeçalhos de segurança
     "corsheaders.middleware.CorsMiddleware",  # CORS middleware deve vir antes do CommonMiddleware
@@ -497,3 +501,63 @@ DJANGO_FILTERS = {
         },
     },
 }
+
+# =============================================================================
+# DJANGO TENANTS CONFIGURATION
+# =============================================================================
+
+# Model de tenant personalizado
+TENANT_MODEL = "tenants.Tenant"
+
+# Model de domínio (django-tenants usa o padrão se não especificado)
+TENANT_DOMAIN_MODEL = "tenants.Domain"
+
+# Apps que existem apenas no schema público (global)
+SHARED_APPS = [
+    "django_tenants",  # SEMPRE incluir no schema público
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    # Apps do projeto que são globais
+    "apps.core",
+    "apps.tenants",  # Tenant management é global (inclui Domain)
+    "apps.authentication",  # Auth é global
+]
+
+# Apps que existem apenas nos schemas de tenant
+TENANT_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    # Third party apps nos tenants
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+    "django_filters",
+    "corsheaders",
+    "health_check",
+    "health_check.db",
+    "health_check.cache",
+    "health_check.storage",
+    "health_check.contrib.migrations",
+    "health_check.contrib.psutil",
+    # Apps específicos por tenant
+    "apps.core",
+    "apps.students",  # Dados de alunos são por tenant
+    "apps.payments",  # Dados financeiros são por tenant
+]
+
+# Schema público padrão
+PUBLIC_SCHEMA_NAME = "public"
+
+# Configurações de multitenancy
+TENANT_LIMIT_SET_CALLS = True  # Otimização de performance
+
+# Router obrigatório para django-tenants
+DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)

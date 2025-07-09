@@ -127,7 +127,7 @@ class TenantCreateSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs: ClassVar = {
             "name": {"help_text": "Nome da academia"},
-            "slug": {"help_text": "Slug único para subdomínio"},
+            "slug": {"help_text": "Slug único para subdomínio", "required": False},
             "email": {"help_text": "Email principal da academia"},
             "phone": {"help_text": "Telefone da academia"},
             "address": {"help_text": "Endereço completo"},

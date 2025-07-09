@@ -38,15 +38,15 @@ class TenantViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Filtra queryset por tenant
+        Filtra queryset por tenant com isolamento automático por schema
 
-        Por enquanto retorna queryset base, mas será implementado
-        isolamento de tenant no futuro
+        O django-tenant-schemas automaticamente garante isolamento total
+        através do schema PostgreSQL configurado pelo middleware.
         """
         queryset = super().get_queryset()
 
-        # TODO: Implementar filtro por tenant quando middleware estiver pronto
-        # queryset = queryset.filter(tenant=self.request.tenant)
+        # O isolamento por tenant é automático via schema-per-tenant
+        # Não precisa filtrar manualmente - o schema já está isolado
 
         # Aplicar filtro de registros ativos por padrão
         if hasattr(queryset.model, "is_active"):
@@ -56,10 +56,13 @@ class TenantViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Customiza criação de objetos com tenant
+        Customiza criação de objetos com isolamento automático por tenant
+
+        O objeto será automaticamente criado no schema correto
+        definido pelo middleware TenantMiddleware.
         """
-        # TODO: Adicionar tenant ao objeto criado
-        # serializer.save(tenant=self.request.tenant)
+        # Isolamento automático via schema - não precisa adicionar tenant manualmente
+        # O schema já está configurado pelo middleware
         serializer.save()
 
     def perform_update(self, serializer):
@@ -145,12 +148,15 @@ class ReadOnlyTenantViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """
-        Filtra queryset por tenant (somente leitura)
+        Filtra queryset por tenant com isolamento automático (somente leitura)
+
+        O django-tenant-schemas automaticamente garante isolamento total
+        através do schema PostgreSQL configurado pelo middleware.
         """
         queryset = super().get_queryset()
 
-        # TODO: Implementar filtro por tenant quando middleware estiver pronto
-        # queryset = queryset.filter(tenant=self.request.tenant)
+        # O isolamento por tenant é automático via schema-per-tenant
+        # Não precisa filtrar manualmente - o schema já está isolado
 
         # Aplicar filtro de registros ativos por padrão
         if hasattr(queryset.model, "is_active"):

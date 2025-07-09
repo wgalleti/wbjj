@@ -6,14 +6,20 @@ Seguindo padrões estabelecidos no CONTEXT.md:
 - Isolamento total entre tenants
 - Permissões granulares
 """
+import logging
+
 from rest_framework import permissions
+
+logger = logging.getLogger(__name__)
 
 
 class TenantPermission(permissions.BasePermission):
     """
     Permissão base para garantir isolamento de tenant
 
-    Valida que o usuário só pode acessar dados do seu tenant
+    Com django-tenant-schemas, o isolamento é automático via schema.
+    Esta permissão garante que o usuário está autenticado e tem
+    acesso ao tenant configurado pelo middleware.
     """
 
     def has_permission(self, request, view):
@@ -24,16 +30,23 @@ class TenantPermission(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        # TODO: Implementar validação de tenant quando o middleware estiver pronto
-        # Por enquanto, permite acesso para usuários autenticados
+        # Verificar se o middleware configurou o tenant
+        if not hasattr(request, "tenant"):
+            logger.warning("Request sem tenant configurado - middleware não funcionou")
+            return False
+
+        # Com schema isolation, se chegou até aqui, o acesso é válido
         return True
 
     def has_object_permission(self, request, view, obj):
         """
         Verifica se o usuário pode acessar o objeto específico
+
+        Com schema-per-tenant, se o objeto existe no schema atual,
+        o usuário automaticamente tem acesso a ele.
         """
-        # TODO: Implementar validação de tenant no objeto
-        # Por enquanto, permite acesso para usuários autenticados
+        # Com isolamento por schema, todos os objetos no schema atual
+        # são acessíveis pelo usuário do tenant
         return True
 
 

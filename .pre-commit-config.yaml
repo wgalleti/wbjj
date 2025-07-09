@@ -10,13 +10,13 @@ repos:
       - id: ruff-format
         files: ^backend/.*\.py$
 
-  # Black - Formatação de código
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-      - id: black
-        language_version: python3.11
-        files: ^backend/.*\.py$
+  # Black removido - usando apenas ruff-format para evitar conflitos
+  # - repo: https://github.com/psf/black
+  #   rev: 23.12.1
+  #   hooks:
+  #     - id: black
+  #       language_version: python3.11
+  #       files: ^backend/.*\.py$
 
   # Hooks básicos de qualidade
   - repo: https://github.com/pre-commit/pre-commit-hooks

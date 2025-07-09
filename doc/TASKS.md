@@ -130,6 +130,36 @@
 
 ---
 
+#### T004B - Sistema de Testes Robusto e Padronizado 🔴 📊
+**Tempo**: 18 horas (2,25 dias)  
+**Valor**: R$ 2.160  
+**Descrição**:
+- Configurar pytest como framework principal de testes seguindo CONTEXT.md
+- Implementar TenantTestCase para testes multitenancy
+- Setup factory-boy para factories consistentes
+- Criar estrutura de testes por camada (models, serializers, viewsets, middleware, etc)
+- Configurar pytest-django e pytest-cov para cobertura > 90%
+- Implementar testes de integração e segurança
+- Padronizar templates e convenções de teste
+- Integrar testes no pipeline CI/CD
+
+**Dependências**: T004  
+**Critérios de Aceitação**:
+- [ ] Pytest configurado com TenantTestCase funcionando
+- [ ] Factory-boy setup com factories para todos os models
+- [ ] Estrutura de testes organizada: tests/models/, tests/serializers/, tests/views/, tests/middleware/
+- [ ] Cobertura de código > 90% (pytest-cov)
+- [ ] Testes de isolamento multitenancy passando
+- [ ] Testes de performance middleware (< 50ms overhead)
+- [ ] Testes de segurança (OWASP básicos)
+- [ ] Templates de teste documentados
+- [ ] Integração com pre-commit hooks
+- [ ] Pipeline CI executando todos os testes
+- [ ] Relatórios de cobertura HTML gerados
+- [ ] Documentação completa em T004B_TESTING_FRAMEWORK.md
+
+---
+
 ### Sprint 3-4: Core Backend APIs
 
 #### T005 - Autenticação e Autorização 🔴 🏗️
@@ -141,7 +171,7 @@
 - Middleware de autorização por tenant
 - Sistema de refresh tokens
 
-**Dependências**: T004  
+**Dependências**: T004B  
 **Critérios de Aceitação**:
 - [ ] Login/logout funcionando
 - [ ] Roles por tenant
@@ -474,20 +504,20 @@
 
 ---
 
-#### T023 - Testes Automatizados 🟡 📊
-**Tempo**: 18 horas (2,25 dias)  
-**Valor**: R$ 2.160  
+#### T023 - Testes E2E Frontend e Mobile 🟡 📊
+**Tempo**: 12 horas (1,5 dias)  
+**Valor**: R$ 1.440  
 **Descrição**:
-- Testes unitários backend
-- Testes E2E frontend
-- Testes de integração
-- Coverage mínimo 70%
+- Testes E2E frontend com Cypress/Playwright
+- Testes de fluxo completo usuário
+- Testes de integração frontend-backend
+- Testes mobile com detox (básicos)
 
 **Dependências**: T022  
 **Critérios de Aceitação**:
-- [ ] Testes implementados
-- [ ] Coverage adequado
-- [ ] CI passando
+- [ ] Testes E2E frontend funcionando
+- [ ] Fluxos críticos cobertos
+- [ ] CI rodando testes E2E
 - [ ] Documentação atualizada
 
 ---
@@ -513,20 +543,20 @@
 ## RESUMO FINANCEIRO
 
 ### Por Fase
-- **Fase 1 - Fundação**: R$ 9.840 (82 horas)
+- **Fase 1 - Fundação**: R$ 12.000 (100 horas)
 - **Fase 2 - Frontend**: R$ 10.320 (86 horas)  
 - **Fase 3 - Mobile**: R$ 10.080 (84 horas)
-- **Fase 4 - Finalização**: R$ 8.160 (68 horas)
+- **Fase 4 - Finalização**: R$ 7.440 (62 horas)
 
 ### Total do Projeto
-- **Tempo Total**: 320 horas (aprox. 8 semanas de desenvolvimento)
-- **Valor Total**: R$ 38.400
+- **Tempo Total**: 332 horas (aprox. 8,3 semanas de desenvolvimento)
+- **Valor Total**: R$ 39.840
 - **Prazo**: 18 semanas (incluindo testes e ajustes)
 
 ### Cronograma de Pagamento Sugerido
-- **30% na aprovação**: R$ 11.520
-- **40% na entrega do MVP**: R$ 15.360  
-- **30% no go-live**: R$ 11.520
+- **30% na aprovação**: R$ 11.952
+- **40% na entrega do MVP**: R$ 15.936  
+- **30% no go-live**: R$ 11.952
 
 ---
 
@@ -567,4 +597,5 @@
    - ✅ **T002 Completa**: Models Django e migrations
    - ✅ **T002B Completa**: Docker Compose e banco de dados
    - ✅ **T003 Completa**: Setup Backend Django (REST API)
-   - 📋 **Próxima**: T004 - Sistema Multitenancy Core 
+   - ✅ **T004 Completa**: Sistema Multitenancy Core
+   - 📋 **Próxima**: T004B - Sistema de Testes Robusto e Padronizado 
