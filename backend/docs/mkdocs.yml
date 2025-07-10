@@ -1,4 +1,176 @@
-site_name: wBJJ
-site_url: https://mydomain.org/mysite
+site_name: wBJJ - Sistema de Gestão para Academias
+site_description: API REST robusta para gestão completa de academias de jiu-jitsu com multitenancy
+site_author: wBJJ Team
+site_url: https://wgalleti.github.io/wbjj/
+
+# Repositório
+repo_name: wgalleti/wbjj
+repo_url: https://github.com/wgalleti/wbjj
+edit_uri: edit/main/backend/docs/docs/
+
+# Configuração do tema Material
 theme:
   name: material
+  language: pt-BR
+
+  # Paleta de cores baseada na identidade visual da academia
+  palette:
+    # Modo claro (amarelo/azul)
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: #0E36A0
+      accent: #FBC615
+      toggle:
+        icon: material/brightness-7
+        name: Alternar para modo escuro
+
+    # Modo escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: #0E36A0
+      accent: #FBC615
+      toggle:
+        icon: material/brightness-4
+        name: Alternar para modo claro
+
+  # Funcionalidades
+  features:
+    # Navegação
+    - navigation.instant      # SPA-like navigation
+    - navigation.instant.prefetch
+    - navigation.tracking     # URL tracking
+    - navigation.tabs         # Top-level sections as tabs
+    - navigation.tabs.sticky  # Sticky navigation tabs
+    - navigation.sections     # Group sections
+    - navigation.expand       # Expand subsections
+    - navigation.path         # Breadcrumbs
+    - navigation.indexes      # Section index pages
+    - navigation.top          # Back to top button
+
+    # TOC (Table of Contents)
+    - toc.follow             # TOC follows scroll
+    - toc.integrate          # TOC integrated in navigation
+
+    # Pesquisa
+    - search.highlight       # Highlight search terms
+    - search.share          # Share search results
+    - search.suggest        # Search suggestions
+
+    # Header
+    - header.autohide       # Auto-hide header on scroll
+
+    # Conteúdo
+    - content.code.copy     # Copy code blocks
+    - content.code.select   # Select code blocks
+    - content.code.annotate # Code annotations
+    - content.tabs.link     # Link content tabs
+    - content.tooltips      # Hover tooltips
+    - content.footnote.tooltips
+
+  # Ícones e logo
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+  # Fontes
+  font:
+    text: Open Sans
+    code: Fira Code
+
+# CSS customizado
+# extra_css:
+#   - stylesheets/extra.css
+
+# JavaScript customizado
+extra_javascript:
+  - javascripts/extra.js
+
+# Plugins (simplificados)
+plugins:
+  - search:
+      lang: pt
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+
+# Extensões Markdown (essenciais)
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - meta
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Link para esta seção
+
+  # PyMdown Extensions
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      auto_title: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+# Estrutura de navegação (apenas páginas existentes)
+nav:
+  - Início:
+    - index.md
+    - Sobre o Projeto: about.md
+
+  - 🚀 Primeiros Passos:
+    - Docker: docker.md
+
+  - 📚 Desenvolvimento:
+    - Padrões e Contexto: context.md
+
+  - 🔌 API:
+    - Documentação Completa: api.md
+    - Exemplos de Uso: usage.md
+
+  - 🎨 Customização:
+    - Admin Django: customization.md
+
+# Informações extras
+extra:
+  # Links sociais
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/wgalleti/wbjj
+      name: GitHub
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/wgalleti/wbjj
+      name: Docker Hub
+    - icon: fontawesome/solid/globe
+      link: https://wbjj.dev
+      name: Site Oficial
+
+# Configurações adicionais
+strict: false  # Desabilitado temporariamente até criar todas as páginas
+dev_addr: '127.0.0.1:8001'
+
+# Copyright
+copyright: >
+  Copyright &copy; 2025 wBJJ Team
