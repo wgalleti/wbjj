@@ -39,11 +39,14 @@ O arquivo `.github/workflows/docs.yml` executa automaticamente quando:
 
 ### Processo de Build
 
-1. **Checkout** do código
-2. **Setup Python 3.11** + UV package manager
+1. **Checkout** do código (`actions/checkout@v4`)
+2. **Setup Python 3.11** + UV package manager (`actions/setup-python@v5`)
 3. **Instalar dependências** (`uv sync --dev`)
 4. **Build MkDocs** (`mkdocs build --clean --strict`)
-5. **Deploy** para branch `gh-pages`
+5. **Upload artifacts** (`actions/upload-pages-artifact@v3`)
+6. **Deploy** para branch `gh-pages` (`actions/deploy-pages@v4`)
+
+> ✅ **Todas as actions atualizadas** para as versões mais recentes (2024)
 
 ### URLs
 
@@ -52,11 +55,16 @@ O arquivo `.github/workflows/docs.yml` executa automaticamente quando:
 
 ## 🛠️ Desenvolvimento Local
 
-### Usando o Script
+### Usando Scripts
 
 ```bash
 # A partir do diretório backend/
+
+# Desenvolvimento local
 ./scripts/serve-docs.sh
+
+# Testar build (como no CI)
+./scripts/test-docs-build.sh
 ```
 
 ### Comandos Manuais
@@ -97,9 +105,25 @@ wbjj/                                    # ← Raiz do projeto
 1. **Verificar logs** em Actions do GitHub
 2. **Testar localmente:**
    ```bash
+   # Teste completo (recomendado)
+   ./scripts/test-docs-build.sh
+
+   # Ou manual
    cd backend/docs
    uv run mkdocs build --clean --strict
    ```
+
+### Problema: Actions deprecated
+
+Se encontrar erros como "deprecated version of actions/upload-artifact":
+
+1. **Verificar versões** no workflow (já corrigido):
+   - ✅ `actions/checkout@v4`
+   - ✅ `actions/setup-python@v5`
+   - ✅ `actions/upload-pages-artifact@v3`
+   - ✅ `actions/deploy-pages@v4`
+
+2. **Forçar novo deploy** depois da correção
 
 ### Problema: Pages não ativa
 
