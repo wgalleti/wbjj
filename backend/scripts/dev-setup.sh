@@ -36,35 +36,27 @@ sleep 10
 
 # Aguardar banco de dados especificamente
 echo "🗄️ Aguardando banco de dados..."
-docker-compose run --rm web uv run python manage.py wait_for_db
+uv run manage.py wait_for_db
 
 # Executar migrations
 echo "📊 Aplicando migrations..."
-docker-compose run --rm web uv run python manage.py migrate
+uv run manage.py migrate_schemas --shared
+uv run manage.py migrate
 
 # Popular dados de desenvolvimento
 echo "🌱 Populando dados de desenvolvimento..."
-docker-compose run --rm web uv run python manage.py seed_data --clear
+uv run manage.py seed_data --clear
 
-# Subir aplicação completa
-echo "🚀 Subindo aplicação completa..."
-docker-compose up -d
 
 echo ""
 echo "✅ Setup completo!"
 echo ""
 echo "📋 Serviços disponíveis:"
-echo "   🌐 Django: http://localhost:8000"
 echo "   🗄️ Adminer: http://localhost:8080"
 echo "   🐘 PostgreSQL: localhost:5432"
 echo "   🔴 Redis: localhost:6379"
 echo ""
-echo "🔧 Comandos úteis:"
-echo "   docker-compose logs -f web    # Logs da aplicação"
-echo "   docker-compose exec web bash  # Shell no container"
-echo "   docker-compose down           # Parar serviços"
-echo ""
 echo "📚 Usuários de desenvolvimento criados:"
 echo "   Admin: admin@wbjj.com / 123456"
 echo "   Instrutor: professor@gb-sp.com.br / 123456"
-echo "   Aluno: joao.silva@email.com / 123456" 
+echo "   Aluno: joao.silva@email.com / 123456"

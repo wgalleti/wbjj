@@ -217,4 +217,5 @@ django_settings_module = "config.settings.development"
 dev = [
     "django-debug-toolbar>=4.4.6",
     "django-unfold>=0.62.0",
+    "mkdocs-material>=9.6.15",
 ]

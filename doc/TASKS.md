@@ -123,10 +123,10 @@
 
 **Dependências**: T003  
 **Critérios de Aceitação**:
-- [ ] Middleware funcionando com subdomínios
-- [ ] Isolamento total entre tenants
-- [ ] Testes automatizados de segurança
-- [ ] Performance adequada (< 50ms overhead)
+- [x] Middleware funcionando com subdomínios
+- [x] Isolamento total entre tenants
+- [x] Testes automatizados de segurança
+- [x] Performance adequada (< 50ms overhead)
 
 ---
 
@@ -145,18 +145,18 @@
 
 **Dependências**: T004  
 **Critérios de Aceitação**:
-- [ ] Pytest configurado com TenantTestCase funcionando
-- [ ] Factory-boy setup com factories para todos os models
-- [ ] Estrutura de testes organizada: tests/models/, tests/serializers/, tests/views/, tests/middleware/
-- [ ] Cobertura de código > 90% (pytest-cov)
-- [ ] Testes de isolamento multitenancy passando
-- [ ] Testes de performance middleware (< 50ms overhead)
-- [ ] Testes de segurança (OWASP básicos)
-- [ ] Templates de teste documentados
-- [ ] Integração com pre-commit hooks
-- [ ] Pipeline CI executando todos os testes
-- [ ] Relatórios de cobertura HTML gerados
-- [ ] Documentação completa em T004B_TESTING_FRAMEWORK.md
+- [x] Pytest configurado com TenantTestCase funcionando
+- [x] Factory-boy setup com factories para todos os models
+- [x] Estrutura de testes organizada: tests/models/, tests/serializers/, tests/views/, tests/middleware/
+- [x] Cobertura de código > 90% (pytest-cov)
+- [x] Testes de isolamento multitenancy passando
+- [x] Testes de performance middleware (< 50ms overhead)
+- [x] Testes de segurança (OWASP básicos)
+- [x] Templates de teste documentados
+- [x] Integração com pre-commit hooks
+- [x] Pipeline CI executando todos os testes
+- [x] Relatórios de cobertura HTML gerados
+- [x] Documentação completa em T004B_TESTING_FRAMEWORK.md
 
 ---
 

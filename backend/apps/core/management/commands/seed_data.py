@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+from django_tenants.utils import tenant_context
 
 from apps.payments.models import Invoice, Payment, PaymentMethod
 from apps.students.models import Attendance, Graduation, Student
@@ -29,15 +30,18 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Criando dados de desenvolvimento..."))
 
-        # Criar dados na ordem de dependência
-        self.create_tenant()
-        payment_methods = self.create_payment_methods()
-        users = self.create_users()
-        students = self.create_students(users)
-        self.create_graduations(students)
-        self.create_attendances(students)
-        invoices = self.create_invoices(students)
-        self.create_payments(invoices, payment_methods)
+        # Primeiro, criar o tenant no schema público
+        tenant = self.create_tenant()
+
+        # Depois, criar dados específicos do tenant no contexto correto
+        with tenant_context(tenant):
+            payment_methods = self.create_payment_methods()
+            users = self.create_users()
+            students = self.create_students(users)
+            self.create_graduations(students)
+            self.create_attendances(students)
+            invoices = self.create_invoices(students)
+            self.create_payments(invoices, payment_methods)
 
         self.stdout.write(
             self.style.SUCCESS("✅ Dados de desenvolvimento criados com sucesso!")
@@ -45,14 +49,20 @@ class Command(BaseCommand):
 
     def clear_data(self):
         """Remove todos os dados de desenvolvimento"""
-        Payment.objects.all().delete()
-        Invoice.objects.all().delete()
-        Attendance.objects.all().delete()
-        Graduation.objects.all().delete()
-        Student.objects.all().delete()
-        User.objects.filter(is_superuser=False).delete()
-        PaymentMethod.objects.all().delete()
-        Tenant.objects.all().delete()
+        # Primeiro limpar dados do tenant
+        tenant = Tenant.objects.filter(slug="zenith-jj").first()
+        if tenant:
+            with tenant_context(tenant):
+                Payment.objects.all().delete()
+                Invoice.objects.all().delete()
+                Attendance.objects.all().delete()
+                Graduation.objects.all().delete()
+                Student.objects.all().delete()
+                User.objects.filter(is_superuser=False).delete()
+                PaymentMethod.objects.all().delete()
+
+        # Depois limpar o tenant do schema público
+        Tenant.objects.filter(slug="zenith-jj").delete()
 
     def create_tenant(self):
         """Cria academia de exemplo"""
@@ -342,10 +352,13 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("\n📊 Resumo dos dados criados:"))
         self.stdout.write(f"   - Academias: {Tenant.objects.count()}")
-        self.stdout.write(f"   - Usuários: {User.objects.count()}")
-        self.stdout.write(f"   - Alunos: {Student.objects.count()}")
-        self.stdout.write(f"   - Graduações: {Graduation.objects.count()}")
-        self.stdout.write(f"   - Presenças: {Attendance.objects.count()}")
-        self.stdout.write(f"   - Faturas: {Invoice.objects.count()}")
-        self.stdout.write(f"   - Pagamentos: {Payment.objects.count()}")
-        self.stdout.write(f"   - Métodos Pagamento: {PaymentMethod.objects.count()}")
+        with tenant_context(Tenant.objects.get(slug="zenith-jj")):
+            self.stdout.write(f"   - Usuários: {User.objects.count()}")
+            self.stdout.write(f"   - Alunos: {Student.objects.count()}")
+            self.stdout.write(f"   - Graduações: {Graduation.objects.count()}")
+            self.stdout.write(f"   - Presenças: {Attendance.objects.count()}")
+            self.stdout.write(f"   - Faturas: {Invoice.objects.count()}")
+            self.stdout.write(f"   - Pagamentos: {Payment.objects.count()}")
+            self.stdout.write(
+                f"   - Métodos Pagamento: {PaymentMethod.objects.count()}"
+            )
