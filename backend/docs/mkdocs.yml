@@ -145,9 +145,11 @@ nav:
 
   - 📚 Desenvolvimento:
     - Padrões e Contexto: context.md
+    - Sistema de Testes: testing.md
 
   - 🔌 API:
     - Documentação Completa: api.md
+    - Autenticação e Autorização: authentication.md
     - Exemplos de Uso: usage.md
 
   - 🎨 Customização:

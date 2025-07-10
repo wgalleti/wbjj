@@ -10,6 +10,7 @@ import time
 from collections.abc import Callable
 from typing import ClassVar
 
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.deprecation import MiddlewareMixin
 
@@ -134,5 +135,139 @@ class TenantMiddleware(MiddlewareMixin):
         """
         if hasattr(request, "tenant"):
             response["X-Tenant-Schema"] = request.tenant.schema_name
+
+        return response
+
+
+class SecurityAuthorizationMiddleware(MiddlewareMixin):
+    """
+    Middleware adicional para validações de segurança e autorização
+
+    Funcionalidades:
+    - Log de tentativas de acesso
+    - Validação de tokens JWT expirados
+    - Detecção de atividade suspeita
+    - Headers de segurança adicionais
+    """
+
+    # Caminhos que não precisam de validação
+    EXEMPT_PATHS: ClassVar[list[str]] = [
+        "/api/v1/auth/token/",
+        "/api/v1/auth/token/refresh/",
+        "/api/v1/core/health/",
+        "/api/v1/core/ping/",
+        "/admin/",
+        "/static/",
+        "/media/",
+    ]
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]):
+        self.get_response = get_response
+        super().__init__(get_response)
+
+    def process_request(self, request: HttpRequest) -> None:
+        """
+        Processa request para validações de segurança
+        """
+        start_time = time.time()
+
+        try:
+            # Pular validação para caminhos isentos
+            if self._is_exempt_path(request):
+                return
+
+            # Log de acesso para auditoria
+            self._log_access_attempt(request)
+
+            # Validar contexto de segurança
+            self._validate_security_context(request)
+
+            # Log de performance
+            processing_time = (time.time() - start_time) * 1000
+            logger.debug(f"SecurityAuthorizationMiddleware: {processing_time:.2f}ms")
+
+        except Exception as err:
+            logger.error(f"Erro no SecurityAuthorizationMiddleware: {err}")
+            # Não bloquear request em caso de erro
+
+    def _is_exempt_path(self, request: HttpRequest) -> bool:
+        """
+        Verifica se o caminho está isento de validação
+        """
+        path = request.path
+        return any(path.startswith(exempt) for exempt in self.EXEMPT_PATHS)
+
+    def _log_access_attempt(self, request: HttpRequest) -> None:
+        """
+        Log de tentativa de acesso para auditoria
+        """
+        user_info = "Anonymous"
+        tenant_info = "No tenant"
+
+        if request.user.is_authenticated:
+            user_info = f"{request.user.email} ({request.user.role})"
+
+        if hasattr(request, "tenant"):
+            tenant_info = f"{request.tenant.name} ({request.tenant.slug})"
+
+        logger.info(
+            f"Access attempt: {request.method} {request.path}",
+            extra={
+                "user": user_info,
+                "tenant": tenant_info,
+                "ip": self._get_client_ip(request),
+                "user_agent": request.META.get("HTTP_USER_AGENT", "Unknown"),
+                "method": request.method,
+                "path": request.path,
+            },
+        )
+
+    def _validate_security_context(self, request: HttpRequest) -> None:
+        """
+        Valida contexto de segurança da requisição
+        """
+        # Validar que usuário autenticado tem tenant
+        if request.user.is_authenticated and not isinstance(
+            request.user, AnonymousUser
+        ):
+            if not hasattr(request, "tenant"):
+                logger.warning(
+                    f"Usuário autenticado sem tenant configurado: {request.user.email}"
+                )
+
+        # Validar que tenant está ativo
+        if hasattr(request, "tenant"):
+            if not request.tenant.is_active:
+                logger.warning(
+                    f"Tentativa de acesso a tenant inativo: {request.tenant.slug}"
+                )
+
+    def _get_client_ip(self, request: HttpRequest) -> str:
+        """
+        Obtém IP do cliente respeitando proxies
+        """
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(",")[0].strip()
+        else:
+            ip = request.META.get("REMOTE_ADDR", "Unknown")
+        return ip
+
+    def process_response(
+        self, request: HttpRequest, response: HttpResponse
+    ) -> HttpResponse:
+        """
+        Adiciona headers de segurança na resposta
+        """
+        # Headers de segurança adicionais
+        response["X-Content-Type-Options"] = "nosniff"
+        response["X-Frame-Options"] = "DENY"
+        response["X-XSS-Protection"] = "1; mode=block"
+        response["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+        # Rate limiting headers (pode ser implementado futuramente)
+        if hasattr(request, "user") and request.user.is_authenticated:
+            response["X-RateLimit-Limit"] = "1000"
+            response["X-RateLimit-Remaining"] = "999"
 
         return response

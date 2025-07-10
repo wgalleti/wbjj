@@ -7,12 +7,14 @@ Seguindo padrões estabelecidos no CONTEXT.md:
 - SEMPRE usar permissions granulares
 """
 
+import logging
 from typing import ClassVar
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.core.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
@@ -22,11 +24,14 @@ from .models import User
 from .serializers import (
     CustomTokenObtainPairSerializer,
     LoginSerializer,
+    LogoutSerializer,
     PasswordChangeSerializer,
     UserCreateSerializer,
     UserSerializer,
     UserUpdateSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema_view(
@@ -234,3 +239,57 @@ class CustomTokenRefreshView(TokenRefreshView):
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
+
+
+class LogoutView(APIView):
+    """
+    View para logout com blacklist de refresh token
+    """
+
+    permission_classes: ClassVar = [permissions.IsAuthenticated]
+    serializer_class = LogoutSerializer
+
+    @extend_schema(
+        summary="Logout",
+        description="Faz logout do usuário invalidando o refresh token",
+        request=LogoutSerializer,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {"message": {"type": "string"}},
+            }
+        },
+        tags=["authentication"],
+    )
+    def post(self, request):
+        """
+        Faz logout invalidando o refresh token
+        """
+        # Log tentativa de logout
+        user_info = (
+            f"{request.user.email} ({request.user.role})"
+            if request.user.is_authenticated
+            else "Anonymous"
+        )
+        logger.info(f"Tentativa de logout para: {user_info}")
+
+        try:
+            serializer = LogoutSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            # Log sucesso do logout
+            logger.info(f"Logout bem-sucedido para: {user_info}")
+
+            return Response(
+                {"message": "Logout realizado com sucesso"},
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            # Log erro no logout
+            logger.error(f"Erro no logout para {user_info}: {e!s}")
+
+            return Response(
+                {"message": "Erro no logout", "detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

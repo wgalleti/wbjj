@@ -6,17 +6,23 @@ Seguindo padrões estabelecidos no CONTEXT.md:
 - Validações rigorosas
 - Campos de auditoria padronizados
 """
+
+import logging
 from typing import ClassVar
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.core.serializers import BaseModelSerializer
 
 from .models import User
+
+logger = logging.getLogger(__name__)
 
 
 class UserSerializer(BaseModelSerializer):
@@ -218,8 +224,14 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
-    Serializer customizado para JWT com informações adicionais
+    Serializer customizado para JWT com informações adicionais e validações de segurança
     """
+
+    email = serializers.EmailField(help_text="Email do usuário")
+    password = serializers.CharField(write_only=True, help_text="Senha do usuário")
+
+    class Meta:
+        fields: ClassVar = ["email", "password"]
 
     @classmethod
     def get_token(cls, user):
@@ -233,19 +245,63 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["role"] = user.role
         token["is_verified"] = user.is_verified
 
+        # Timestamp do login para auditoria
+        token["login_time"] = timezone.now().timestamp()
+
         return token
 
     def validate(self, attrs):
-        """Validação customizada do login"""
+        """Validação customizada do login com logs de segurança"""
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        # Log tentativa de login
+        logger.info(f"Tentativa de login para: {email}")
+
+        # Validar se usuário existe
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            logger.warning(f"Tentativa de login com email inexistente: {email}")
+            raise serializers.ValidationError(
+                {"email": "Email ou senha incorretos"}
+            ) from None
+
+        # Validar se usuário está ativo
+        if not user.is_active:
+            logger.warning(f"Tentativa de login com usuário inativo: {email}")
+            raise serializers.ValidationError(
+                {"email": "Conta desativada. Entre em contato com o administrador."}
+            )
+
+        # Tentar autenticar
+        user = authenticate(username=email, password=password)
+        if user is None:
+            logger.warning(f"Falha na autenticação para: {email}")
+            raise serializers.ValidationError({"password": "Email ou senha incorretos"})
+
+        # Validar se email foi verificado (opcional, pode ser removido para MVP)
+        if not user.is_verified:
+            logger.info(f"Login com email não verificado: {email}")
+            # Para MVP, apenas log de warning, não bloqueia login
+
+        # Sucesso na autenticação
+        logger.info(f"Login bem-sucedido para: {email} (role: {user.role})")
+
+        # Atualizar last_login
+        user.last_login = timezone.now()
+        user.save(update_fields=["last_login"])
+
+        # Chamar validação padrão
         data = super().validate(attrs)
 
         # Adiciona informações do usuário na resposta
         data["user"] = {
-            "id": str(self.user.id),
-            "email": self.user.email,
-            "full_name": self.user.full_name,
-            "role": self.user.role,
-            "is_verified": self.user.is_verified,
+            "id": str(user.id),
+            "email": user.email,
+            "full_name": user.full_name,
+            "role": user.role,
+            "is_verified": user.is_verified,
         }
 
         return data
@@ -261,3 +317,33 @@ class LoginSerializer(serializers.Serializer):
 
     class Meta:
         fields: ClassVar = ["email", "password"]
+
+
+class LogoutSerializer(serializers.Serializer):
+    """
+    Serializer para logout com blacklist do refresh token
+    """
+
+    refresh = serializers.CharField(
+        write_only=True,
+        help_text="Refresh token para ser invalidado",
+        required=True,
+    )
+
+    def validate(self, attrs):
+        """
+        Valida e faz blacklist do refresh token
+        """
+        try:
+            # Criar instância do token
+            refresh_token = RefreshToken(attrs["refresh"])
+
+            # Adicionar token ao blacklist
+            refresh_token.blacklist()
+
+        except Exception:
+            raise serializers.ValidationError(
+                {"refresh": "Token inválido ou já foi invalidado"}
+            ) from None
+
+        return attrs

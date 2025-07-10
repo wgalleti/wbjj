@@ -1,6 +1,7 @@
 """
-Testes para Views de Autenticação
-Foco: UserViewSet, JWT views, ações customizadas, permissões
+Testes para views de autenticação
+
+Foco: ViewSets de usuário, JWT authentication, logout, permissões
 Objetivo: 100% de cobertura para authentication/views.py
 """
 
@@ -8,6 +9,8 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.authentication.views import (
     CustomTokenObtainPairView,
@@ -152,12 +155,15 @@ class TestUserViewSet(BaseModelTestCase):
         }
 
         # Mock UserUpdateSerializer e UserSerializer
-        with patch(
-            "apps.authentication.views.UserUpdateSerializer",
-            return_value=mock_update_serializer,
-        ), patch(
-            "apps.authentication.views.UserSerializer",
-            return_value=mock_response_serializer,
+        with (
+            patch(
+                "apps.authentication.views.UserUpdateSerializer",
+                return_value=mock_update_serializer,
+            ),
+            patch(
+                "apps.authentication.views.UserSerializer",
+                return_value=mock_response_serializer,
+            ),
         ):
             response = self.viewset.update_profile(mock_request)
 
@@ -372,3 +378,293 @@ class TestViewSetConfiguration(BaseModelTestCase):
         # Verifica ordering padrão
         expected_ordering = ["first_name", "last_name"]
         self.assertEqual(viewset.ordering, expected_ordering)
+
+
+class TestLogoutView(BaseModelTestCase):
+    """Testes para LogoutView - logout com blacklist JWT"""
+
+    model_class = User
+
+    def setUp(self):
+        super().setUp()
+        self.client = APIClient()
+        self.user = UserFactory()
+        self.refresh_token = RefreshToken.for_user(self.user)
+
+    def test_logout_success(self):
+        """Teste logout bem-sucedido com blacklist do token"""
+        # Autenticar usuário
+        self.client.force_authenticate(user=self.user)
+
+        # Dados do logout
+        data = {"refresh": str(self.refresh_token)}
+
+        # Fazer logout
+        response = self.client.post("/api/v1/auth/logout/", data)
+
+        # Verificar resposta
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("message", response.data)
+        self.assertEqual(response.data["message"], "Logout realizado com sucesso")
+
+    def test_logout_invalid_token(self):
+        """Teste logout com token inválido"""
+        # Autenticar usuário
+        self.client.force_authenticate(user=self.user)
+
+        # Dados com token inválido
+        data = {"refresh": "token_invalido"}
+
+        # Fazer logout
+        response = self.client.post("/api/v1/auth/logout/", data)
+
+        # Verificar erro
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("message", response.data)
+
+    def test_logout_missing_token(self):
+        """Teste logout sem token"""
+        # Autenticar usuário
+        self.client.force_authenticate(user=self.user)
+
+        # Fazer logout sem dados
+        response = self.client.post("/api/v1/auth/logout/", {})
+
+        # Verificar erro
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_logout_unauthenticated(self):
+        """Teste logout sem autenticação"""
+        # Dados do logout
+        data = {"refresh": str(self.refresh_token)}
+
+        # Fazer logout sem autenticação
+        response = self.client.post("/api/v1/auth/logout/", data)
+
+        # Verificar erro de autenticação
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_already_blacklisted_token(self):
+        """Teste logout com token já invalidado"""
+        # Autenticar usuário
+        self.client.force_authenticate(user=self.user)
+
+        # Fazer blacklist do token manualmente
+        self.refresh_token.blacklist()
+
+        # Dados do logout
+        data = {"refresh": str(self.refresh_token)}
+
+        # Fazer logout
+        response = self.client.post("/api/v1/auth/logout/", data)
+
+        # Verificar erro
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("apps.authentication.views.logger")
+    def test_logout_logging(self, mock_logger):
+        """Teste logs de segurança no logout"""
+        # Autenticar usuário
+        self.client.force_authenticate(user=self.user)
+
+        # Dados do logout
+        data = {"refresh": str(self.refresh_token)}
+
+        # Fazer logout
+        self.client.post("/api/v1/auth/logout/", data)
+
+        # Verificar que foi logado
+        mock_logger.info.assert_any_call(
+            f"Tentativa de logout para: {self.user.email} ({self.user.role})"
+        )
+        mock_logger.info.assert_any_call(
+            f"Logout bem-sucedido para: {self.user.email} ({self.user.role})"
+        )
+
+
+class TestCustomTokenObtainPairViewSecurity(BaseModelTestCase):
+    """Testes de segurança para login JWT"""
+
+    model_class = User
+
+    def setUp(self):
+        super().setUp()
+        self.client = APIClient()
+        self.user = UserFactory(email="test@example.com", is_active=True)
+        self.user.set_password("testpass123")
+        self.user.save()
+
+    @patch("apps.authentication.serializers.logger")
+    def test_login_success_logging(self, mock_logger):
+        """Teste logs de login bem-sucedido"""
+        data = {"email": "test@example.com", "password": "testpass123"}
+
+        response = self.client.post("/api/v1/auth/token/", data)
+
+        # Verificar resposta
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
+        self.assertIn("user", response.data)
+
+        # Verificar logs
+        mock_logger.info.assert_any_call("Tentativa de login para: test@example.com")
+        mock_logger.info.assert_any_call(
+            f"Login bem-sucedido para: test@example.com (role: {self.user.role})"
+        )
+
+    @patch("apps.authentication.serializers.logger")
+    def test_login_invalid_email_logging(self, mock_logger):
+        """Teste logs de tentativa com email inexistente"""
+        data = {"email": "inexistente@example.com", "password": "testpass123"}
+
+        response = self.client.post("/api/v1/auth/token/", data)
+
+        # Verificar erro
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Verificar logs
+        mock_logger.info.assert_called_with(
+            "Tentativa de login para: inexistente@example.com"
+        )
+        mock_logger.warning.assert_called_with(
+            "Tentativa de login com email inexistente: inexistente@example.com"
+        )
+
+    @patch("apps.authentication.serializers.logger")
+    def test_login_wrong_password_logging(self, mock_logger):
+        """Teste logs de tentativa com senha incorreta"""
+        data = {"email": "test@example.com", "password": "senha_errada"}
+
+        response = self.client.post("/api/v1/auth/token/", data)
+
+        # Verificar erro
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Verificar logs
+        mock_logger.info.assert_called_with("Tentativa de login para: test@example.com")
+        mock_logger.warning.assert_called_with(
+            "Falha na autenticação para: test@example.com"
+        )
+
+    @patch("apps.authentication.serializers.logger")
+    def test_login_inactive_user_logging(self, mock_logger):
+        """Teste logs de tentativa com usuário inativo"""
+        # Desativar usuário
+        self.user.is_active = False
+        self.user.save()
+
+        data = {"email": "test@example.com", "password": "testpass123"}
+
+        response = self.client.post("/api/v1/auth/token/", data)
+
+        # Verificar erro
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Verificar logs
+        mock_logger.warning.assert_called_with(
+            "Tentativa de login com usuário inativo: test@example.com"
+        )
+
+    def test_login_token_contains_user_info(self):
+        """Teste que token JWT contém informações do usuário"""
+        data = {"email": "test@example.com", "password": "testpass123"}
+
+        response = self.client.post("/api/v1/auth/token/", data)
+
+        # Verificar resposta
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verificar dados do usuário na resposta
+        user_data = response.data["user"]
+        self.assertEqual(user_data["id"], str(self.user.id))
+        self.assertEqual(user_data["email"], self.user.email)
+        self.assertEqual(user_data["role"], self.user.role)
+        self.assertEqual(user_data["is_verified"], self.user.is_verified)
+
+    def test_login_updates_last_login(self):
+        """Teste que login atualiza last_login"""
+        # Verificar que last_login é None inicialmente
+        self.assertIsNone(self.user.last_login)
+
+        data = {"email": "test@example.com", "password": "testpass123"}
+
+        response = self.client.post("/api/v1/auth/token/", data)
+
+        # Verificar resposta
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verificar que last_login foi atualizado
+        self.user.refresh_from_db()
+        self.assertIsNotNone(self.user.last_login)
+
+
+class TestJWTSecurityConfiguration(BaseModelTestCase):
+    """Testes para configurações de segurança do JWT"""
+
+    model_class = User
+
+    def test_jwt_contains_security_claims(self):
+        """Teste que JWT contém claims de segurança"""
+        from apps.authentication.serializers import CustomTokenObtainPairSerializer
+
+        user = UserFactory()
+        token = CustomTokenObtainPairSerializer.get_token(user)
+
+        # Verificar claims customizados
+        self.assertIn("user_id", token)
+        self.assertIn("email", token)
+        self.assertIn("role", token)
+        self.assertIn("is_verified", token)
+        self.assertIn("login_time", token)
+
+    def test_jwt_blacklist_functionality(self):
+        """Teste funcionalidade de blacklist"""
+        from rest_framework_simplejwt.token_blacklist.models import (
+            BlacklistedToken,
+            OutstandingToken,
+        )
+
+        user = UserFactory()
+        refresh_token = RefreshToken.for_user(user)
+
+        # Verificar que o token está na tabela OutstandingToken
+        outstanding_tokens = OutstandingToken.objects.filter(user=user)
+        self.assertTrue(outstanding_tokens.exists())
+
+        # Verificar que não está blacklistado inicialmente
+        blacklisted_count_before = BlacklistedToken.objects.count()
+
+        # Fazer blacklist
+        refresh_token.blacklist()
+
+        # Verificar que foi criado um registro de blacklist
+        blacklisted_count_after = BlacklistedToken.objects.count()
+        self.assertEqual(blacklisted_count_after, blacklisted_count_before + 1)
+
+
+class TestMiddlewareSecurityIntegration(BaseModelTestCase):
+    """Testes de integração com middleware de segurança"""
+
+    model_class = User
+
+    def setUp(self):
+        super().setUp()
+        self.client = APIClient()
+        self.user = UserFactory()
+
+    def test_authenticated_request_has_security_headers(self):
+        """Teste que requests autenticados têm headers de segurança"""
+        # Autenticar usuário
+        self.client.force_authenticate(user=self.user)
+
+        # Fazer request para endpoint protegido
+        response = self.client.get("/api/v1/auth/users/me/")
+
+        # Verificar headers de segurança
+        self.assertIn("X-Content-Type-Options", response)
+        self.assertEqual(response["X-Content-Type-Options"], "nosniff")
+        self.assertIn("X-Frame-Options", response)
+        self.assertEqual(response["X-Frame-Options"], "DENY")
+        self.assertIn("X-XSS-Protection", response)
+        self.assertEqual(response["X-XSS-Protection"], "1; mode=block")

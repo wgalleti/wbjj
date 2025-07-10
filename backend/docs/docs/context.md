@@ -227,7 +227,7 @@ class StudentFactory(factory.django.DjangoModelFactory):
 
 ### 3. Cobertura mínima: 80%
 ```bash
-pytest --cov=apps --cov-report=html --cov-fail-under=80
+uv run pytest --cov=apps --cov-report=html --cov-fail-under=80
 ```
 
 ## 📏 Padrões de Qualidade de Código OBRIGATÓRIOS
@@ -379,13 +379,13 @@ ruff format .
 mypy apps/
 
 # 4. Testes
-pytest
+uv run pytest
 
 # 5. Verificação Django
-python manage.py check
+uv run manage.py check
 
 # 6. Verificação de schema OpenAPI
-python manage.py spectacular --file=/dev/null
+uv run manage.py spectacular --file=/dev/null
 ```
 
 ### 9. Configuração Ruff OBRIGATÓRIA No pyproject.toml
@@ -432,32 +432,249 @@ extend-immutable-calls = ["fastapi.Depends"]
 ```
 
 ### 10. Pre-commit Hooks OBRIGATÓRIOS
+
+#### Configuração Completa - `.pre-commit-config.yaml`
 ```yaml
-# .pre-commit-config.yaml - SEMPRE configurar
+# .pre-commit-config.yaml - CONFIGURAÇÃO OBRIGATÓRIA
 repos:
+  # Ruff - Linter extremamente rápido para Python
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
+    rev: v0.1.15
     hooks:
       - id: ruff
+        files: ^backend/.*\.py$
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
+        files: ^backend/.*\.py$
 
+  # Hooks básicos de qualidade - OBRIGATÓRIOS
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^backend/.*\.(py|yaml|yml|json|toml|md)$
+      - id: end-of-file-fixer
+        files: ^backend/.*\.(py|yaml|yml|json|toml|md)$
+      - id: check-yaml
+        files: ^backend/.*\.ya?ml$
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        files: ^backend/.*$
+      - id: debug-statements
+        files: ^backend/.*\.py$
+
+  # Django específico - OBRIGATÓRIO
   - repo: local
     hooks:
       - id: django-check
         name: Django Check
-        entry: python manage.py check
+        entry: bash -c 'cd backend && python manage.py check'
         language: system
         pass_filenames: false
+        files: ^backend/.*\.py$
 
-      - id: openapi-check
-        name: OpenAPI Schema Check
-        entry: python manage.py spectacular --file=/dev/null
+      - id: django-migrations-check
+        name: Django Migrations Check
+        entry: bash -c 'cd backend && python manage.py makemigrations --check --dry-run'
         language: system
+        pass_filenames: false
+        files: ^backend/.*\.py$
+
+  # Segurança - Bandit OBRIGATÓRIO
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ["-r", "backend/apps/", "-f", "json", "--skip", "B101,B601"]
+        files: ^backend/apps/.*\.py$
+        exclude: ^backend/.*/migrations/.*\.py$
         pass_filenames: false
 ```
 
-### 11. NUNCA Fazer - Erros Comuns
+#### Regras de Formatação OBRIGATÓRIAS
+
+**1. Ruff - Linting e Formatação**
+- ✅ **SEMPRE** usar `ruff` como linter principal
+- ✅ **SEMPRE** aplicar correções automáticas com `--fix`
+- ✅ **SEMPRE** usar `ruff-format` para formatação
+- ❌ **NUNCA** usar Black simultaneamente (conflito de formatação)
+
+**2. Qualidade de Arquivo - OBRIGATÓRIO**
+- ✅ **SEMPRE** remover espaços em branco no final das linhas (`trailing-whitespace`)
+- ✅ **SEMPRE** garantir nova linha no final dos arquivos (`end-of-file-fixer`)
+- ✅ **SEMPRE** validar sintaxe YAML (`check-yaml`)
+- ✅ **SEMPRE** verificar conflitos de merge (`check-merge-conflict`)
+- ❌ **NUNCA** deixar `print()` ou `pdb.set_trace()` no código (`debug-statements`)
+- ❌ **NUNCA** fazer commit de arquivos > 1MB (`check-added-large-files`)
+
+**3. Django - Validações OBRIGATÓRIAS**
+- ✅ **SEMPRE** executar `python manage.py check` antes do commit
+- ✅ **SEMPRE** verificar migrations pendentes com `--check --dry-run`
+- ❌ **NUNCA** fazer commit com `manage.py check` falhando
+- ❌ **NUNCA** fazer commit com migrations não criadas
+
+**4. Segurança - Bandit OBRIGATÓRIO**
+- ✅ **SEMPRE** executar análise de segurança com Bandit
+- ✅ **SEMPRE** corrigir vulnerabilidades encontradas
+- ❌ **NUNCA** ignorar alertas de segurança sem justificativa
+- ❌ **NUNCA** fazer commit com vulnerabilidades críticas
+
+#### Tipos de Arquivo Cobertos
+```
+Python:     *.py (linting, formatação, segurança)
+YAML:       *.yaml, *.yml (validação de sintaxe)
+JSON:       *.json (formatação)
+TOML:       *.toml (formatação)
+Markdown:   *.md (espaços, nova linha)
+```
+
+#### Exclusões Automáticas
+```
+Migrations:    backend/*/migrations/*.py (excluídas do Bandit)
+Cache/Build:   __pycache__/, .git/, .venv/ (ignoradas)
+```
+
+### 11. Aplicação Prática das Regras de Formatação
+
+#### Comandos de Verificação OBRIGATÓRIOS
+```bash
+# 1. Verificação completa antes do commit
+pre-commit run --all-files
+
+# 2. Verificação específica por ferramenta
+ruff check backend/                    # Linting
+ruff format backend/                   # Formatação
+bandit -r backend/apps/               # Segurança
+python backend/manage.py check        # Django
+
+# 3. Verificação de qualidade de arquivo
+pre-commit run trailing-whitespace --all-files
+pre-commit run end-of-file-fixer --all-files
+pre-commit run check-yaml --all-files
+
+# 4. Verificação de migrations
+cd backend && python manage.py makemigrations --check --dry-run
+```
+
+#### Workflow de Desenvolvimento com Pre-commit
+```bash
+# Setup inicial (uma vez por projeto)
+pre-commit install               # Instalar hooks
+pre-commit install --hook-type pre-push  # Hook de push
+
+# Desenvolvimento diário
+git add .                       # Adicionar arquivos
+git commit -m "feat: nova funcionalidade"  # Commit automático executa hooks
+
+# Se hooks falharem, corrigir e tentar novamente
+git add .                       # Adicionar correções
+git commit -m "feat: nova funcionalidade"  # Tentar commit novamente
+```
+
+#### Correções Automáticas vs Manuais
+
+**Correções Automáticas (ruff --fix):**
+- ✅ Import sorting (isort)
+- ✅ Unused imports removal
+- ✅ Code formatting
+- ✅ Trailing whitespace removal
+- ✅ End-of-file newline addition
+
+**Correções Manuais Necessárias:**
+- ❌ Exception chaining (`raise ... from err`)
+- ❌ Unused variables (renomear para `_`)
+- ❌ Security vulnerabilities (Bandit)
+- ❌ Django check errors
+- ❌ Missing migrations
+
+#### Tratamento de Erros Comuns
+
+**1. Ruff Errors (B904, F841, etc.)**
+```bash
+# Ver detalhes do erro
+ruff check backend/apps/authentication/serializers.py --show-fixes
+
+# Aplicar correções automáticas
+ruff check backend/apps/authentication/serializers.py --fix
+
+# Verificar resultado
+ruff check backend/apps/authentication/serializers.py
+```
+
+**2. Django Check Failures**
+```bash
+# Verificar problemas
+python backend/manage.py check --deploy
+
+# Corrigir configurações
+python backend/manage.py check --tag security
+
+# Validar migrations
+python backend/manage.py makemigrations --check
+```
+
+**3. Bandit Security Issues**
+```bash
+# Ver relatório detalhado
+bandit -r backend/apps/ -f json -o security-report.json
+
+# Verificar específicos
+bandit -r backend/apps/authentication/ -ll
+
+# Skip falsos positivos (cuidadosamente)
+bandit -r backend/apps/ --skip B101,B601
+```
+
+**4. File Quality Issues**
+```bash
+# Trailing whitespace
+find backend/ -name "*.py" -exec sed -i 's/[[:space:]]*$//' {} \;
+
+# Missing newlines
+find backend/ -name "*.py" -exec sh -c 'echo >> "$1"' _ {} \;
+
+# Debug statements
+grep -r "print\|pdb\.set_trace" backend/apps/
+```
+
+#### Integração com IDE/Editor
+
+**VS Code - settings.json**
+```json
+{
+  "python.linting.enabled": true,
+  "python.linting.ruffEnabled": true,
+  "python.formatting.provider": "none",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll.ruff": true
+  }
+}
+```
+
+**PyCharm - Configuração**
+```
+File → Settings → Tools → External Tools → Add
+Name: Ruff Check
+Program: ruff
+Arguments: check $FileDir$
+Working Directory: $ProjectFileDir$
+```
+
+#### Bypass de Emergência (USO RESTRITO)
+```bash
+# APENAS em emergências - pular hooks específicos
+SKIP=bandit git commit -m "emergency fix"
+
+# APENAS para correções urgentes - pular todos os hooks
+git commit -m "hotfix" --no-verify
+
+# NUNCA fazer isso em produção ou para features normais
+```
+
+### 12. NUNCA Fazer - Erros Comuns
 ```python
 # ❌ ERRADO - Request sem self em métodos de ViewSet
 def perform_create(self, serializer):
@@ -479,7 +696,7 @@ for (name, value, extra) in items:  # ❌ extra não é usado
 items = list1 + ["new_item"]  # ❌ Usar unpacking
 ```
 
-### 12. Setup Inicial OBRIGATÓRIO para Qualidade
+### 13. Setup Inicial OBRIGATÓRIO para Qualidade
 ```bash
 # 1. Instalar pre-commit no projeto
 uv add --dev pre-commit
@@ -491,10 +708,10 @@ pre-commit install
 pre-commit run --all-files
 
 # 4. Testar pipeline completo
-ruff check . && ruff format . && python manage.py check && pytest
+ruff check . && ruff format . && uv run manage.py check && uv run pytest
 ```
 
-### 13. Template Padrão para Novos Arquivos
+### 14. Template Padrão para Novos Arquivos
 ```python
 """
 [Nome do módulo] para [funcionalidade]
@@ -517,9 +734,33 @@ from apps.core.serializers import BaseModelSerializer
 # Implementação segue padrões do CONTEXT.md
 ```
 
-### 14. Checklist Rápido de Qualidade ✅
+### 15. Checklist Rápido de Qualidade ✅
 ```markdown
 ## Antes de fazer commit, verificar:
+
+### Pre-commit Hooks - OBRIGATÓRIO
+- [ ] `pre-commit run --all-files` = PASSA
+- [ ] Todos os hooks configurados em `.pre-commit-config.yaml`
+- [ ] Sem bypass de hooks (`--no-verify`) sem justificativa
+
+### Formatação e Linting - OBRIGATÓRIO
+- [ ] `ruff check backend/` = 0 erros
+- [ ] `ruff format backend/` executado
+- [ ] Sem `print()` ou `pdb.set_trace()` (`debug-statements`)
+- [ ] Sem espaços em branco no final das linhas (`trailing-whitespace`)
+- [ ] Nova linha no final de todos os arquivos (`end-of-file-fixer`)
+
+### Qualidade de Arquivo - OBRIGATÓRIO
+- [ ] Arquivos YAML válidos (`check-yaml`)
+- [ ] Sem conflitos de merge não resolvidos (`check-merge-conflict`)
+- [ ] Sem arquivos > 1MB (`check-added-large-files`)
+- [ ] Sem vulnerabilidades críticas Bandit
+
+### Django - OBRIGATÓRIO
+- [ ] `python manage.py check` = OK
+- [ ] `python manage.py makemigrations --check --dry-run` = OK
+- [ ] Sem migrations pendentes
+- [ ] `python manage.py spectacular --file=/dev/null` = OK
 
 ### Imports e Estrutura
 - [ ] `from typing import ClassVar` quando necessário
@@ -549,14 +790,33 @@ from apps.core.serializers import BaseModelSerializer
 ### Código Geral
 - [ ] Variáveis não usadas com `_`
 - [ ] Unpacking ao invés de concatenação: `[*list1, item]`
-- [ ] Sem `print()` - usar `logger`
+- [ ] Exception chaining correto (`raise ... from err`)
+- [ ] Sem `logger` configurado - usar `logger`
 
-### Pipeline de Qualidade
-- [ ] `ruff check .` = 0 erros
-- [ ] `ruff format .` executado
-- [ ] `python manage.py check` = OK
-- [ ] `python manage.py spectacular --file=/dev/null` = OK
-- [ ] `pytest` passa com cobertura > 80%
+### Testes e Cobertura
+- [ ] `uv run pytest tests/without_db/` = PASSA
+- [ ] `uv run pytest tests/with_db/ --cov=apps` = PASSA
+- [ ] Cobertura de código > 80%
+- [ ] Testes específicos para mudanças implementadas
+
+### Segurança
+- [ ] `bandit -r backend/apps/` = sem vulnerabilidades críticas
+- [ ] Sem credenciais hardcoded
+- [ ] Sem informações sensíveis em logs
+- [ ] Validação adequada de inputs
+
+### Comando Final de Verificação
+```bash
+# Executar ANTES de cada commit
+pre-commit run --all-files && \
+cd backend && \
+python manage.py check && \
+python manage.py makemigrations --check --dry-run && \
+python manage.py spectacular --file=/dev/null && \
+cd .. && \
+uv run pytest tests/without_db/ && \
+echo "✅ PRONTO PARA COMMIT"
+```
 ```
 
 ## 🚀 Padrões de Deploy e Configuração
@@ -678,9 +938,9 @@ logger.info("Student created",
 ### Antes de cada commit
 1. `ruff check .` - Linting (OBRIGATÓRIO - deve passar 100%)
 2. `ruff format .` - Formatação automática
-3. `pytest` - Testes (cobertura > 80%)
-4. `python manage.py check` - Verificação Django
-5. `python manage.py spectacular --file=/dev/null` - Validar OpenAPI
+3. `uv run pytest` - Testes (cobertura > 80%)
+4. `uv run manage.py check` - Verificação Django
+5. `uv run manage.py spectacular --file=/dev/null` - Validar OpenAPI
 
 ### Ao criar nova funcionalidade
 1. Model com UUID + auditoria + soft delete
@@ -703,6 +963,81 @@ logger.info("Student created",
 - **Cache hit rate**: > 80%
 - **Test coverage**: > 80%
 - **Documentation coverage**: 100% dos endpoints
+
+## 🧪 Sistema de Testes
+
+Para documentação completa sobre testes, consulte o [Sistema de Testes](testing.md) dedicado que inclui:
+
+- **Estrutura de Testes**: Organização `with_db/` vs `without_db/`
+- **Scripts de Teste**: Comandos para execução rápida e completa
+- **Banco de Dados**: Criação, reset e configuração
+- **Factories e Fixtures**: Padrões com Factory Boy
+- **Debugging**: Comandos para troubleshooting
+- **Coverage**: Relatórios e metas de cobertura
+- **CI/CD**: Integração com GitHub Actions
+
+### Comandos Essenciais de Teste
+
+```bash
+# Testes rápidos (sem banco) - ~10-30 segundos
+./scripts/test-without-db.sh
+
+# Testes completos (com banco) - ~2-5 minutos
+./scripts/test-with-db.sh
+
+# Cobertura de código
+uv run pytest --cov=apps --cov-report=html
+```
+
+**Meta de Cobertura**: Mínimo 80% | **Documentação Completa**: [testing.md](testing.md)
+
+## 🔧 Scripts de Desenvolvimento
+
+### Scripts Essenciais
+
+```bash
+# Setup completo do ambiente
+./scripts/dev-setup.sh            # Setup inicial (recomendado)
+./scripts/dev-setup.sh --clean    # Setup com limpeza total
+
+# Testes
+./scripts/test-without-db.sh      # Testes rápidos (~10-30s)
+./scripts/test-with-db.sh         # Testes completos (~2-5min)
+
+# Documentação
+./scripts/serve-docs.sh           # Servidor docs (http://127.0.0.1:8001)
+./scripts/test-docs-build.sh      # Validar build da docs
+
+# Validação
+./scripts/test-commands.sh        # Verificar comandos Django
+```
+
+### Comandos Django Essenciais
+
+```bash
+# Desenvolvimento
+uv run manage.py wait_for_db      # Aguardar banco
+uv run manage.py migrate          # Aplicar migrations
+uv run manage.py seed_data        # Popular dados de desenvolvimento
+uv run manage.py runserver        # Executar servidor
+
+# Validação
+uv run manage.py check            # Verificar sistema
+uv run manage.py spectacular --file=/dev/null  # Validar OpenAPI
+
+# Testes
+uv run pytest tests/without_db/   # Testes rápidos
+uv run pytest tests/with_db/ --cov=apps  # Testes com cobertura
+```
+
+### Workflow de Desenvolvimento
+
+1. **Setup inicial**: `./scripts/dev-setup.sh`
+2. **Desenvolvimento diário**: `./scripts/test-without-db.sh`
+3. **Antes do commit**: `./scripts/test-with-db.sh`
+4. **Troubleshooting**: `./scripts/dev-setup.sh --clean`
+
+**Documentação Completa**: [testing.md](testing.md#scripts-de-desenvolvimento-obrigatórios)
 
 ## 📞 Escalação
 

@@ -12,7 +12,7 @@
 - 🟡 **Importante**: Necessário para funcionalidade
 - 🟢 **Melhorias**: Pode ser postergado
 - ⚡ **Rápido**: < 1 dia
-- 📊 **Médio**: 1-3 dias  
+- 📊 **Médio**: 1-3 dias
 - 🏗️ **Grande**: > 3 dias
 
 ---
@@ -22,16 +22,16 @@
 ### Sprint 1-2: Decisões e Setup Inicial
 
 #### T001 - Setup Repositório e Ambiente ✅ ⚡
-**Tempo**: 4 horas  
-**Valor**: R$ 480  
+**Tempo**: 4 horas
+**Valor**: R$ 480
 **Status**: **COMPLETA**
-**Descrição**: 
+**Descrição**:
 - Configurar monorepo com estrutura backend/frontend/mobile
 - Setup Docker Compose para desenvolvimento
 - Configurar Git com hooks básicos
 - Documentar guia de setup para desenvolvedores
 
-**Dependências**: Nenhuma  
+**Dependências**: Nenhuma
 **Critérios de Aceitação**:
 - [x] Repositório configurado com estrutura de pastas
 - [x] Backend Django configurado com UV
@@ -42,8 +42,8 @@
 ---
 
 #### T002 - Models Django e Migrations ✅ 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Status**: **COMPLETA**
 **Descrição**:
 - Implementar Abstract Base Models (BaseModel, TimestampedModel, SoftDeleteModel)
@@ -53,7 +53,7 @@
 - Configurar Django Admin completo com inlines e fieldsets
 - Implementar comando seed_data para desenvolvimento
 
-**Dependências**: T001  
+**Dependências**: T001
 **Critérios de Aceitação**:
 - [x] BaseModel abstrato com UUID, timestamps e soft delete
 - [x] User personalizado (email login, roles, multitenancy ready)
@@ -66,8 +66,8 @@
 ---
 
 #### T002B - Docker Compose e Banco de Dados ✅ 🏗️
-**Tempo**: 6 horas (0,75 dias)  
-**Valor**: R$ 720  
+**Tempo**: 6 horas (0,75 dias)
+**Valor**: R$ 720
 **Status**: **COMPLETA**
 **Descrição**:
 - Configurar Docker Compose com PostgreSQL e Redis
@@ -76,7 +76,7 @@
 - Aplicar migrations e popular dados de seed
 - Documentar comandos de desenvolvimento
 
-**Dependências**: T002  
+**Dependências**: T002
 **Critérios de Aceitação**:
 - [x] Docker Compose funcionando (PostgreSQL + Redis)
 - [x] Migrations aplicadas automaticamente
@@ -88,8 +88,8 @@
 ---
 
 #### T003 - Setup Backend Django (REST API) ✅ 📊
-**Tempo**: 12 horas (1,5 dias)  
-**Valor**: R$ 1.440  
+**Tempo**: 12 horas (1,5 dias)
+**Valor**: R$ 1.440
 **Status**: **COMPLETA**
 **Descrição**:
 - Configurar Django REST Framework e serializers
@@ -98,7 +98,7 @@
 - Setup documentação automática (OpenAPI/Swagger)
 - Implementar endpoints de healthcheck e status
 
-**Dependências**: T002B  
+**Dependências**: T002B
 **Critérios de Aceitação**:
 - [x] Django REST Framework configurado
 - [x] APIs básicas funcionando (CRUD models)
@@ -113,15 +113,15 @@
 ---
 
 #### T004 - Sistema Multitenancy Core 🔴 🏗️
-**Tempo**: 24 horas (3 dias)  
-**Valor**: R$ 2.880  
+**Tempo**: 24 horas (3 dias)
+**Valor**: R$ 2.880
 **Descrição**:
 - Implementar middleware de detecção de tenant
 - Criar sistema de schemas dinâmicos PostgreSQL
 - Implementar isolamento de dados por tenant
 - Testes de segurança de isolamento
 
-**Dependências**: T003  
+**Dependências**: T003
 **Critérios de Aceitação**:
 - [x] Middleware funcionando com subdomínios
 - [x] Isolamento total entre tenants
@@ -131,8 +131,8 @@
 ---
 
 #### T004B - Sistema de Testes Robusto e Padronizado 🔴 📊
-**Tempo**: 18 horas (2,25 dias)  
-**Valor**: R$ 2.160  
+**Tempo**: 18 horas (2,25 dias)
+**Valor**: R$ 2.160
 **Descrição**:
 - Configurar pytest como framework principal de testes seguindo CONTEXT.md
 - Implementar TenantTestCase para testes multitenancy
@@ -143,7 +143,7 @@
 - Padronizar templates e convenções de teste
 - Integrar testes no pipeline CI/CD
 
-**Dependências**: T004  
+**Dependências**: T004
 **Critérios de Aceitação**:
 - [x] Pytest configurado com TenantTestCase funcionando
 - [x] Factory-boy setup com factories para todos os models
@@ -162,34 +162,35 @@
 
 ### Sprint 3-4: Core Backend APIs
 
-#### T005 - Autenticação e Autorização 🔴 🏗️
-**Tempo**: 20 horas (2,5 dias)  
-**Valor**: R$ 2.400  
+#### T005 - Autenticação e Autorização ✅ 🏗️
+**Tempo**: 20 horas (2,5 dias)
+**Valor**: R$ 2.400
+**Status**: **COMPLETA**
 **Descrição**:
 - Implementar sistema de login JWT
 - Criar RBAC (Role-Based Access Control)
 - Middleware de autorização por tenant
 - Sistema de refresh tokens
 
-**Dependências**: T004B  
+**Dependências**: T004B
 **Critérios de Aceitação**:
-- [ ] Login/logout funcionando
-- [ ] Roles por tenant
-- [ ] Tokens seguros com expiração
-- [ ] Endpoints protegidos
+- [x] Login/logout funcionando
+- [x] Roles por tenant
+- [x] Tokens seguros com expiração
+- [x] Endpoints protegidos
 
 ---
 
 #### T006 - CRUD de Alunos 🔴 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Descrição**:
 - Criar modelos de Student
 - Implementar APIs CRUD completas
 - Sistema de graduações de faixas
 - Validações e regras de negócio
 
-**Dependências**: T005  
+**Dependências**: T005
 **Critérios de Aceitação**:
 - [ ] APIs CRUD documentadas
 - [ ] Sistema de graduações
@@ -199,15 +200,15 @@
 ---
 
 #### T007 - Módulo Financeiro Básico 🔴 📊
-**Tempo**: 20 horas (2,5 dias)  
-**Valor**: R$ 2.400  
+**Tempo**: 20 horas (2,5 dias)
+**Valor**: R$ 2.400
 **Descrição**:
 - Modelos de Payment e Invoice
 - APIs para mensalidades
 - Controle de status de pagamento
 - Relatórios básicos
 
-**Dependências**: T006  
+**Dependências**: T006
 **Critérios de Aceitação**:
 - [ ] Sistema de mensalidades
 - [ ] Controle de inadimplência
@@ -221,15 +222,15 @@
 ### Sprint 5-6: Setup e Autenticação Web
 
 #### T008 - Setup Vue.js + Tailwind 🔴 📊
-**Tempo**: 12 horas (1,5 dias)  
-**Valor**: R$ 1.440  
+**Tempo**: 12 horas (1,5 dias)
+**Valor**: R$ 1.440
 **Descrição**:
 - Configurar projeto Vue.js 3
 - Setup Tailwind CSS + Shadcn/Vue
 - Configurar Pinia para estado global
 - Setup de build e desenvolvimento
 
-**Dependências**: T003  
+**Dependências**: T003
 **Critérios de Aceitação**:
 - [ ] Projeto Vue rodando
 - [ ] Tailwind configurado
@@ -239,15 +240,15 @@
 ---
 
 #### T009 - Sistema de Autenticação Web 🔴 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Descrição**:
 - Telas de login/logout
 - Integração com APIs do backend
 - Proteção de rotas
 - Gestão de tokens no frontend
 
-**Dependências**: T008, T005  
+**Dependências**: T008, T005
 **Critérios de Aceitação**:
 - [ ] Login funcionando
 - [ ] Rotas protegidas
@@ -257,15 +258,15 @@
 ---
 
 #### T010 - Multitenancy Frontend 🔴 📊
-**Tempo**: 14 horas (1,75 dias)  
-**Valor**: R$ 1.680  
+**Tempo**: 14 horas (1,75 dias)
+**Valor**: R$ 1.680
 **Descrição**:
 - Detecção de tenant por subdomínio
 - Sistema de temas por tenant
 - Configuração de logos/cores
 - Loading de configurações dinâmicas
 
-**Dependências**: T009  
+**Dependências**: T009
 **Critérios de Aceitação**:
 - [ ] Subdomínios funcionando
 - [ ] Temas personalizáveis
@@ -277,15 +278,15 @@
 ### Sprint 7-8: Dashboard e Gestão
 
 #### T011 - Dashboard Administrativo 🔴 🏗️
-**Tempo**: 24 horas (3 dias)  
-**Valor**: R$ 2.880  
+**Tempo**: 24 horas (3 dias)
+**Valor**: R$ 2.880
 **Descrição**:
 - Layout principal responsivo
 - Sidebar com navegação
 - Dashboard com métricas básicas
 - Header com informações do usuário
 
-**Dependências**: T010  
+**Dependências**: T010
 **Critérios de Aceitação**:
 - [ ] Layout responsivo
 - [ ] Navegação funcional
@@ -295,15 +296,15 @@
 ---
 
 #### T012 - Gestão de Alunos Frontend 🔴 🏗️
-**Tempo**: 20 horas (2,5 dias)  
-**Valor**: R$ 2.400  
+**Tempo**: 20 horas (2,5 dias)
+**Valor**: R$ 2.400
 **Descrição**:
 - Listagem de alunos com filtros
 - Formulários de cadastro/edição
 - Sistema de graduações visual
 - Upload de fotos
 
-**Dependências**: T011, T006  
+**Dependências**: T011, T006
 **Critérios de Aceitação**:
 - [ ] CRUD completo funcionando
 - [ ] Filtros e busca
@@ -313,15 +314,15 @@
 ---
 
 #### T013 - Dashboard Financeiro 🔴 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Descrição**:
 - Gráficos de receita
 - Lista de mensalidades
 - Controle de inadimplentes
 - Relatórios básicos
 
-**Dependências**: T012, T007  
+**Dependências**: T012, T007
 **Critérios de Aceitação**:
 - [ ] Gráficos funcionais
 - [ ] Dados em tempo real
@@ -335,15 +336,15 @@
 ### Sprint 9-10: Setup e Autenticação Mobile
 
 #### T014 - Setup Flutter 🔴 📊
-**Tempo**: 12 horas (1,5 dias)  
-**Valor**: R$ 1.440  
+**Tempo**: 12 horas (1,5 dias)
+**Valor**: R$ 1.440
 **Descrição**:
 - Configurar projeto Flutter
 - Setup de navegação
 - Configurar state management (Riverpod)
 - Setup de build para iOS/Android
 
-**Dependências**: T003  
+**Dependências**: T003
 **Critérios de Aceitação**:
 - [ ] Projeto Flutter funcionando
 - [ ] Navegação configurada
@@ -353,15 +354,15 @@
 ---
 
 #### T015 - Autenticação Mobile 🔴 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Descrição**:
 - Telas de login elegantes
 - Integração com APIs
 - Autenticação biométrica
 - Onboarding inicial
 
-**Dependências**: T014, T005  
+**Dependências**: T014, T005
 **Critérios de Aceitação**:
 - [ ] Login funcionando
 - [ ] Biometria implementada
@@ -371,15 +372,15 @@
 ---
 
 #### T016 - Configuração Visual por Tenant 🔴 📊
-**Tempo**: 14 horas (1,75 dias)  
-**Valor**: R$ 1.680  
+**Tempo**: 14 horas (1,75 dias)
+**Valor**: R$ 1.680
 **Descrição**:
 - Sistema de temas dinâmicos
 - Carregamento de logos/cores
 - Configurações per tenant
 - Fallbacks para offline
 
-**Dependências**: T015  
+**Dependências**: T015
 **Critérios de Aceitação**:
 - [ ] Temas funcionando
 - [ ] Assets personalizados
@@ -391,15 +392,15 @@
 ### Sprint 11-12: Funcionalidades do Aluno
 
 #### T017 - Dashboard do Aluno 🔴 📊
-**Tempo**: 18 horas (2,25 dias)  
-**Valor**: R$ 2.160  
+**Tempo**: 18 horas (2,25 dias)
+**Valor**: R$ 2.160
 **Descrição**:
 - Tela inicial com informações
 - Próximas aulas
 - Progresso pessoal
 - Notificações básicas
 
-**Dependências**: T016  
+**Dependências**: T016
 **Critérios de Aceitação**:
 - [ ] Dashboard funcional
 - [ ] Dados em tempo real
@@ -409,15 +410,15 @@
 ---
 
 #### T018 - Sistema de Agendamentos 🔴 🏗️
-**Tempo**: 24 horas (3 dias)  
-**Valor**: R$ 2.880  
+**Tempo**: 24 horas (3 dias)
+**Valor**: R$ 2.880
 **Descrição**:
 - Calendário de aulas
 - Sistema de reservas
 - Check-in/check-out
 - Cancelamentos
 
-**Dependências**: T017  
+**Dependências**: T017
 **Critérios de Aceitação**:
 - [ ] Calendário funcionando
 - [ ] Reservas em tempo real
@@ -427,15 +428,15 @@
 ---
 
 #### T019 - Push Notifications 🔴 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Descrição**:
 - Configuração Firebase/FCM
 - Notificações de aulas
 - Lembretes de pagamento
 - Configurações de usuário
 
-**Dependências**: T018  
+**Dependências**: T018
 **Critérios de Aceitação**:
 - [ ] Notificações funcionando
 - [ ] Diferentes tipos
@@ -449,15 +450,15 @@
 ### Sprint 13-14: Integrações
 
 #### T020 - Integração Gateway de Pagamento 🟡 🏗️
-**Tempo**: 20 horas (2,5 dias)  
-**Valor**: R$ 2.400  
+**Tempo**: 20 horas (2,5 dias)
+**Valor**: R$ 2.400
 **Descrição**:
 - Integração com Stripe/PagSeguro
 - Webhooks de confirmação
 - Processamento assíncrono
 - Logs e auditoria
 
-**Dependências**: T007  
+**Dependências**: T007
 **Critérios de Aceitação**:
 - [ ] Pagamentos funcionando
 - [ ] Webhooks implementados
@@ -467,15 +468,15 @@
 ---
 
 #### T021 - Landing Pages por Tenant 🟡 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Descrição**:
 - Templates customizáveis
 - SEO otimizado
 - Formulários de contato
 - Performance otimizada
 
-**Dependências**: T010  
+**Dependências**: T010
 **Critérios de Aceitação**:
 - [ ] Templates funcionando
 - [ ] SEO implementado
@@ -487,15 +488,15 @@
 ### Sprint 15: Deploy e Testes
 
 #### T022 - Setup CI/CD 🔴 📊
-**Tempo**: 14 horas (1,75 dias)  
-**Valor**: R$ 1.680  
+**Tempo**: 14 horas (1,75 dias)
+**Valor**: R$ 1.680
 **Descrição**:
 - Pipeline GitHub Actions
 - Deploy automatizado
 - Testes automatizados
 - Monitoramento básico
 
-**Dependências**: T001  
+**Dependências**: T001
 **Critérios de Aceitação**:
 - [ ] Pipeline funcionando
 - [ ] Deploy automático
@@ -505,15 +506,15 @@
 ---
 
 #### T023 - Testes E2E Frontend e Mobile 🟡 📊
-**Tempo**: 12 horas (1,5 dias)  
-**Valor**: R$ 1.440  
+**Tempo**: 12 horas (1,5 dias)
+**Valor**: R$ 1.440
 **Descrição**:
 - Testes E2E frontend com Cypress/Playwright
 - Testes de fluxo completo usuário
 - Testes de integração frontend-backend
 - Testes mobile com detox (básicos)
 
-**Dependências**: T022  
+**Dependências**: T022
 **Critérios de Aceitação**:
 - [ ] Testes E2E frontend funcionando
 - [ ] Fluxos críticos cobertos
@@ -523,15 +524,15 @@
 ---
 
 #### T024 - Academia Piloto e Launch 🔴 📊
-**Tempo**: 16 horas (2 dias)  
-**Valor**: R$ 1.920  
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
 **Descrição**:
 - Onboarding academia piloto
 - Migração de dados
 - Treinamento usuários
 - Suporte pós-launch
 
-**Dependências**: T023  
+**Dependências**: T023
 **Critérios de Aceitação**:
 - [ ] Academia configurada
 - [ ] Dados migrados
@@ -544,7 +545,7 @@
 
 ### Por Fase
 - **Fase 1 - Fundação**: R$ 12.000 (100 horas)
-- **Fase 2 - Frontend**: R$ 10.320 (86 horas)  
+- **Fase 2 - Frontend**: R$ 10.320 (86 horas)
 - **Fase 3 - Mobile**: R$ 10.080 (84 horas)
 - **Fase 4 - Finalização**: R$ 7.440 (62 horas)
 
@@ -555,7 +556,7 @@
 
 ### Cronograma de Pagamento Sugerido
 - **30% na aprovação**: R$ 11.952
-- **40% na entrega do MVP**: R$ 15.936  
+- **40% na entrega do MVP**: R$ 15.936
 - **30% no go-live**: R$ 11.952
 
 ---
@@ -592,10 +593,10 @@
    - Mudanças de escopo podem impactar significativamente
    - Testes com academia piloto podem gerar retrabalho
 
-4. **Status Atual**: 
+4. **Status Atual**:
    - ✅ **T001 Completa**: Setup repositório e ambiente Django
    - ✅ **T002 Completa**: Models Django e migrations
    - ✅ **T002B Completa**: Docker Compose e banco de dados
    - ✅ **T003 Completa**: Setup Backend Django (REST API)
    - ✅ **T004 Completa**: Sistema Multitenancy Core
-   - 📋 **Próxima**: T004B - Sistema de Testes Robusto e Padronizado 
+   - 📋 **Próxima**: T004B - Sistema de Testes Robusto e Padronizado

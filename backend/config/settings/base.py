@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-t@k7#yb5u=)dd4gpb%p*%5^3-&m37xko4g6k8*7pws*bm(l!y&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "django_filters",
     "corsheaders",
@@ -74,6 +75,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.authentication.middleware.SecurityAuthorizationMiddleware",  # Middleware de autorização e segurança
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -521,6 +523,8 @@ SHARED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third party apps que precisam ser globais
+    "rest_framework_simplejwt.token_blacklist",  # Token blacklist deve ser global
     # Apps do projeto que são globais
     "apps.core",
     "apps.tenants",  # Tenant management é global (inclui Domain)
@@ -538,6 +542,7 @@ TENANT_APPS = [
     # Third party apps nos tenants
     "rest_framework",
     "rest_framework_simplejwt",
+    # NOTA: token_blacklist está em SHARED_APPS, não aqui
     "drf_spectacular",
     "django_filters",
     "corsheaders",
