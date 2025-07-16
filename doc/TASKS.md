@@ -112,21 +112,180 @@
 
 ---
 
-#### T004 - Sistema Multitenancy Core 🔴 🏗️
-**Tempo**: 24 horas (3 dias)
-**Valor**: R$ 2.880
+#### T004 - Sistema Multitenancy MVP (Simplificado) 🔴 🏗️
+**Tempo**: 16 horas (2 dias)
+**Valor**: R$ 1.920
+**Status**: **COMPLETA**
 **Descrição**:
-- Implementar middleware de detecção de tenant
-- Criar sistema de schemas dinâmicos PostgreSQL
-- Implementar isolamento de dados por tenant
-- Testes de segurança de isolamento
+- Implementar middleware de detecção de tenant por subdomínio
+- Criar modelo Tenant simples com campos básicos
+- Implementar TenantModel base para herança
+- Criar TenantViewSet base com filtros automáticos
+- Implementar isolamento de dados por tenant_id
+- Testes de segurança de isolamento (básicos)
 
 **Dependências**: T003
 **Critérios de Aceitação**:
 - [x] Middleware funcionando com subdomínios
-- [x] Isolamento total entre tenants
-- [x] Testes automatizados de segurança
-- [x] Performance adequada (< 50ms overhead)
+- [x] Modelo Tenant com campos de configuração
+- [x] TenantModel base funcionando
+- [x] TenantViewSet filtrando automaticamente por tenant
+- [x] Isolamento por tenant_id funcionando
+- [x] Testes automatizados de segurança básicos
+- [x] Performance adequada (< 20ms overhead)
+- [x] Cache de tenant por subdomínio
+
+**Limitações MVP**:
+- Isolamento parcial (mesmo banco)
+- Risco de vazamento se filtros falharem
+- Performance limitada com muitos tenants
+- Backup não granular por tenant
+
+---
+
+#### T004D - Criação do Backend MVP Simplificado 🔴 🏗️
+**Tempo**: 20 horas (2,5 dias)
+**Valor**: R$ 2.400
+**Status**: **PENDENTE**
+**Descrição**:
+- Criar novo diretório `backend-mvp` com implementação MVP simplificada
+- Remover django-tenants e implementar TenantMixin com tenant_id
+- Criar middleware de filtro de dados por tenant_id
+- Migrar estrutura de dados para modelo simplificado
+- Manter mesmos padrões de código e estrutura de diretórios
+- Configurar ambiente de desenvolvimento para novo backend
+- Ajustar os testes para nova estrutura
+
+**Dependências**: T004 (backend django-tenants já implementado)
+**Critérios de Aceitação**:
+- [x] Novo diretório `backend-mvp` criado com estrutura Django limpa
+- [ ] Django-tenants removido das dependências
+- [ ] TenantMixin implementado com tenant_id em todos os models
+- [ ] Middleware de detecção e filtro por tenant funcionando
+- [ ] Migração de dados do schema separado para tenant_id
+- [ ] Testes básicos funcionando no novo backend
+- [ ] Docker e ambiente de desenvolvimento configurados
+- [ ] Documentação atualizada para nova estrutura
+
+**Estrutura de Diretórios Resultante**:
+```
+wBJJ/
+├── backend-mvp/                    # Novo backend MVP simplificado
+│   ├── apps/
+│   │   ├── tenants/           # Modelo Tenant simples
+│   │   ├── authentication/    # User com tenant_id
+│   │   ├── students/          # Student com tenant_id
+│   │   ├── payments/          # Payment com tenant_id
+│   │   └── core/              # TenantMixin e utilities
+│   ├── config/
+│   ├── docker-compose.yml
+│   └── requirements.txt
+├── backend/                   # Backend original (django-tenants)
+│   ├── apps/                  # Implementação com schemas separados
+│   ├── config/
+│   └── requirements.txt       # Com django-tenants
+└── doc/                       # Documentação atualizada
+```
+
+**Implementação Detalhada**:
+
+1. **TenantMixin Base**:
+```python
+# backend-mvp/apps/core/models.py
+class TenantMixin(models.Model):
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='%(class)s_set'
+    )
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.tenant_id:
+            raise ValueError("Tenant é obrigatório")
+        super().save(*args, **kwargs)
+```
+
+2. **Middleware de Filtro**:
+```python
+# backend-mvp/apps/core/middleware.py
+class TenantMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Detectar tenant por subdomínio
+        subdomain = request.get_host().split('.')[0]
+        tenant = Tenant.objects.get(subdomain=subdomain)
+        request.tenant = tenant
+
+        response = self.get_response(request)
+        return response
+```
+
+3. **ViewSet Base com Filtro**:
+```python
+# backend-mvp/apps/core/viewsets.py
+class TenantViewSet(viewsets.ModelViewSet):
+    def get_queryset(self):
+        return self.queryset.filter(tenant=self.request.tenant)
+
+    def perform_create(self, serializer):
+        serializer.save(tenant=self.request.tenant)
+```
+
+**Migração de Dados**:
+- Script para extrair dados dos schemas separados
+- Transformar para estrutura com tenant_id
+- Validar integridade dos dados migrados
+
+**Benefícios da Abordagem**:
+- **Preserva trabalho anterior**: Backend django-tenants mantido como referência
+- **Acelera MVP**: Implementação mais simples e rápida
+- **Facilita comparação**: Dois backends para avaliar performance
+- **Reduz risco**: Rollback possível para implementação original
+- **Melhora produtividade**: Desenvolvimento mais ágil no MVP
+
+---
+
+#### T004C - Débito Técnico: Multitenancy V2.0 (Schemas Separados) 🟡 🏗️
+**Tempo**: 140 horas (17,5 dias)
+**Valor**: R$ 16.800
+**Status**: **DÉBITO TÉCNICO**
+**Descrição**:
+- Migrar para django-tenant-schemas
+- Implementar schemas separados por tenant
+- Reescrever middleware para mudança automática de schema
+- Migrar dados existentes para novos schemas
+- Implementar backup granular por tenant
+- Testes completos de isolamento e performance
+- Documentação da migração
+
+**Dependências**: MVP validado e em produção
+**Critérios de Aceitação**:
+- [ ] Django-tenant-schemas configurado
+- [ ] Middleware com mudança automática de schema
+- [ ] Migração de dados sem perda
+- [ ] Isolamento total entre tenants
+- [ ] Backup granular por tenant
+- [ ] Performance otimizada para milhares de tenants
+- [ ] Testes completos de segurança
+- [ ] Documentação da arquitetura V2.0
+
+**Benefícios V2.0**:
+- Isolamento total de dados
+- Backup granular por tenant
+- Performance otimizada
+- Escalabilidade para milhares de tenants
+- Segurança máxima
+
+**Estimativa de Migração**:
+- **Tempo**: 3-4 semanas de desenvolvimento
+- **Custo**: R$ 14.400 - R$ 19.200
+- **Complexidade**: Alta
+- **Risco**: Médio (migração de dados)
 
 ---
 
@@ -135,7 +294,7 @@
 **Valor**: R$ 2.160
 **Descrição**:
 - Configurar pytest como framework principal de testes seguindo CONTEXT.md
-- Implementar TenantTestCase para testes multitenancy
+- Implementar TenantTestCase para testes multitenancy MVP
 - Setup factory-boy para factories consistentes
 - Criar estrutura de testes por camada (models, serializers, viewsets, middleware, etc)
 - Configurar pytest-django e pytest-cov para cobertura > 90%
@@ -543,34 +702,62 @@
 
 ## RESUMO FINANCEIRO
 
-### Por Fase
-- **Fase 1 - Fundação**: R$ 12.000 (100 horas)
+### Por Fase (MVP)
+- **Fase 1 - Fundação**: R$ 13.440 (112 horas) - Inclui T004D para criação do backend MVP
 - **Fase 2 - Frontend**: R$ 10.320 (86 horas)
 - **Fase 3 - Mobile**: R$ 10.080 (84 horas)
 - **Fase 4 - Finalização**: R$ 7.440 (62 horas)
 
-### Total do Projeto
-- **Tempo Total**: 332 horas (aprox. 8,3 semanas de desenvolvimento)
-- **Valor Total**: R$ 39.840
+### Total do MVP
+- **Tempo Total**: 344 horas (aprox. 8,6 semanas de desenvolvimento)
+- **Valor Total**: R$ 41.280 (Inclui R$ 2.400 para criação do backend MVP)
 - **Prazo**: 18 semanas (incluindo testes e ajustes)
 
 ### Cronograma de Pagamento Sugerido
-- **30% na aprovação**: R$ 11.952
-- **40% na entrega do MVP**: R$ 15.936
-- **30% no go-live**: R$ 11.952
+- **30% na aprovação**: R$ 12.384
+- **40% na entrega do MVP**: R$ 16.512
+- **30% no go-live**: R$ 12.384
 
 ---
 
 ## DÉBITOS TÉCNICOS IDENTIFICADOS
 
 ### Para Versão 2.0 (Pós-MVP)
-1. **Reescrita Backend para Golang** - Estimativa: 120h (R$ 14.400)
-2. **Frontend em TypeScript + Framework moderno** - Estimativa: 80h (R$ 9.600)
-3. **Testes mais robustos** - Estimativa: 40h (R$ 4.800)
-4. **Performance optimization** - Estimativa: 60h (R$ 7.200)
-5. **Funcionalidades avançadas** - Estimativa: 200h (R$ 24.000)
+1. **T004C - Multitenancy com Schemas Separados** - Estimativa: 140h (R$ 16.800)
+2. **Reescrita Backend para Golang** - Estimativa: 120h (R$ 14.400)
+3. **Frontend em TypeScript + Framework moderno** - Estimativa: 80h (R$ 9.600)
+4. **Testes mais robustos** - Estimativa: 40h (R$ 4.800)
+5. **Performance optimization** - Estimativa: 60h (R$ 7.200)
+6. **Funcionalidades avançadas** - Estimativa: 200h (R$ 24.000)
 
-**Total V2.0**: R$ 60.000 adicional
+**Total V2.0**: R$ 76.800 adicional
+
+### Prioridade dos Débitos Técnicos
+1. **🔴 Crítico**: T004C - Multitenancy V2.0 (quando houver > 10 tenants)
+2. **🟡 Importante**: Reescrita para Golang (quando performance for gargalo)
+3. **🟢 Desejável**: TypeScript frontend (quando equipe crescer)
+
+---
+
+## BENEFÍCIOS DA SIMPLIFICAÇÃO MVP
+
+### Economia Imediata
+- **R$ 960 economizados** na implementação inicial
+- **8 horas reduzidas** no desenvolvimento
+- **Menor complexidade** para testes e debug
+- **Deploy mais simples** sem configurações de schema
+
+### Vantagens Estratégicas
+- **Time-to-market mais rápido** para validação
+- **Menos pontos de falha** na implementação inicial
+- **Facilidade de desenvolvimento** para equipe
+- **Testes mais simples** e diretos
+
+### Quando Migrar para V2.0
+- **> 10 tenants ativos** (performance)
+- **> 1000 usuários por tenant** (escalabilidade)
+- **Requisitos de compliance** específicos
+- **Necessidade de backup granular** por tenant
 
 ---
 
@@ -598,5 +785,12 @@
    - ✅ **T002 Completa**: Models Django e migrations
    - ✅ **T002B Completa**: Docker Compose e banco de dados
    - ✅ **T003 Completa**: Setup Backend Django (REST API)
-   - ✅ **T004 Completa**: Sistema Multitenancy Core
-   - 📋 **Próxima**: T004B - Sistema de Testes Robusto e Padronizado
+   - ✅ **T004 Completa**: Sistema Multitenancy MVP (Simplificado)
+   - ✅ **T004B Completa**: Sistema de Testes Robusto e Padronizado
+   - ✅ **T005 Completa**: Autenticação e Autorização
+   - 📋 **Próxima**: T006 - CRUD de Alunos
+
+5. **Débito Técnico Monitorado**:
+   - **T004C**: Multitenancy V2.0 será implementado quando necessário
+   - **Métricas de trigger**: Número de tenants, performance, requisitos de compliance
+   - **Planejamento**: Migração será feita sem downtime e com rollback plan

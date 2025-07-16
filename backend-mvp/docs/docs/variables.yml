@@ -1,0 +1,107 @@
+# Variáveis globais para documentação wBJJ
+
+# Informações do projeto
+project:
+  name: "wBJJ"
+  full_name: "Sistema de Gestão para Academias de Jiu-Jitsu"
+  description: "API REST robusta para gestão completa de academias de jiu-jitsu com multitenancy"
+  version: "1.0.0"
+  license: "MIT"
+
+# URLs
+urls:
+  github: "https://github.com/wbjj/backend"
+  docker_hub: "https://hub.docker.com/r/wbjj/backend"
+  api_docs: "http://localhost:8000/api/docs/"
+  api_schema: "http://localhost:8000/api/schema/"
+  api_redoc: "http://localhost:8000/api/redoc/"
+  site: "https://wbjj.dev"
+
+# Tecnologias
+tech:
+  python: "3.11+"
+  django: "4.2.x LTS"
+  drf: "3.14.x"
+  postgresql: "15+"
+  redis: "7+"
+  docker: "24+"
+
+# Configurações de desenvolvimento
+dev:
+  api_port: 8000
+  docs_port: 8001
+  db_port: 5432
+  redis_port: 6379
+  adminer_port: 8080
+
+# Usuários padrão (desenvolvimento)
+users:
+  admin:
+    email: "admin@wbjj.com"
+    password: "123456"
+    role: "Administrador"
+
+  instructor:
+    email: "professor@gb-sp.com.br"
+    password: "123456"
+    role: "Instrutor"
+
+  student:
+    email: "joao.silva@email.com"
+    password: "123456"
+    role: "Aluno"
+
+# Comandos úteis
+commands:
+  setup: "./scripts/dev-setup.sh"
+  start: "docker-compose up -d"
+  logs: "docker-compose logs -f"
+  shell: "docker-compose exec web bash"
+  django_shell: "docker-compose exec web uv run python manage.py shell"
+  migrate: "docker-compose exec web uv run python manage.py migrate"
+  test: "docker-compose exec web uv run pytest"
+
+# Padrões de qualidade
+quality:
+  coverage_min: 80
+  response_time_p95: "< 200ms"
+  uptime: "> 99.9%"
+
+# Características principais
+features:
+  - "Gestão Completa de Alunos"
+  - "Sistema Financeiro"
+  - "Multitenancy Seguro"
+  - "Autenticação JWT"
+  - "API RESTful"
+  - "Admin Customizado"
+  - "Cache Inteligente"
+  - "Health Checks"
+  - "Logs Estruturados"
+  - "Docker Ready"
+
+# Emoji mapping para consistência
+emoji:
+  api: "🔌"
+  docker: "🐳"
+  database: "🗄️"
+  security: "🔒"
+  performance: "⚡"
+  docs: "📚"
+  code: "💻"
+  test: "🧪"
+  rocket: "🚀"
+  fire: "🔥"
+  gear: "⚙️"
+  art: "🎨"
+  books: "📖"
+  tools: "🛠️"
+  warning: "⚠️"
+  trophy: "🏆"
+  handshake: "🤝"
+  phone: "📞"
+  building: "🏗️"
+  sparkles: "✨"
+  heart: "❤️"
+  check: "✅"
+  cross: "❌"

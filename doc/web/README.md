@@ -125,7 +125,7 @@ web/
 
 ## Implementação Multitenancy
 
-### Detecção de Tenant
+### Detecção de Tenant (MVP Simplificado)
 ```javascript
 // composables/useTenant.js
 import { ref, computed } from 'vue'
@@ -146,16 +146,17 @@ export function useTenant() {
   const loadTenant = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
+      // MVP: Buscar tenant por subdomínio via API
       const tenantData = await tenantService.getBySubdomain(subdomain.value)
       if (!tenantData) {
         throw new Error('Academia não encontrada')
       }
-      
+
       tenant.value = tenantData
-      applyTenantTheme(tenantData.theme)
-      
+      applyTenantTheme(tenantData)
+
     } catch (err) {
       error.value = err.message
       console.error('Erro ao carregar tenant:', err)
@@ -165,22 +166,29 @@ export function useTenant() {
     }
   }
 
-  const applyTenantTheme = (theme) => {
+  const applyTenantTheme = (tenantData) => {
     // Aplicar CSS custom properties
-    document.documentElement.style.setProperty('--primary-color', theme.primaryColor)
-    document.documentElement.style.setProperty('--secondary-color', theme.secondaryColor)
-    
-    // Trocar favicon
-    const favicon = document.querySelector('link[rel="icon"]')
-    if (favicon) {
-      favicon.href = theme.favicon
+    document.documentElement.style.setProperty('--primary-color', tenantData.primary_color)
+    document.documentElement.style.setProperty('--secondary-color', tenantData.secondary_color)
+
+    // Trocar favicon se disponível
+    if (tenantData.favicon_url) {
+      const favicon = document.querySelector('link[rel="icon"]')
+      if (favicon) {
+        favicon.href = tenantData.favicon_url
+      }
     }
-    
-    // Trocar logo
-    const logo = document.querySelector('.tenant-logo')
-    if (logo) {
-      logo.src = theme.logo
+
+    // Trocar logo se disponível
+    if (tenantData.logo_url) {
+      const logo = document.querySelector('.tenant-logo')
+      if (logo) {
+        logo.src = tenantData.logo_url
+      }
     }
+
+    // Atualizar título da página
+    document.title = `${tenantData.name} - Sistema de Gestão`
   }
 
   return {
@@ -194,7 +202,55 @@ export function useTenant() {
 }
 ```
 
-### Router Guards para Tenant
+### Serviço de Tenant (MVP)
+```javascript
+// services/tenants.js
+import { api } from './api'
+
+export const tenantService = {
+  /**
+   * Buscar tenant por subdomínio
+   * MVP: Endpoint simples que retorna dados do tenant
+   */
+  async getBySubdomain(subdomain) {
+    try {
+      const response = await api.get(`/api/v1/tenants/by-subdomain/${subdomain}/`)
+      return response.data
+    } catch (error) {
+      if (error.response?.status === 404) {
+        return null
+      }
+      throw error
+    }
+  },
+
+  /**
+   * Validar se tenant existe e está ativo
+   */
+  async validateTenant(subdomain) {
+    try {
+      const response = await api.get(`/api/v1/tenants/validate/${subdomain}/`)
+      return response.data
+    } catch (error) {
+      return null
+    }
+  },
+
+  /**
+   * Obter configurações do tenant atual
+   */
+  async getCurrentTenantConfig() {
+    try {
+      const response = await api.get('/api/v1/tenants/current/config/')
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  }
+}
+```
+
+### Router Guards para Tenant (Simplificado)
 ```javascript
 // router/guards.js
 import { tenantService } from '@/services/tenants'
@@ -203,25 +259,25 @@ export async function tenantGuard(to, from, next) {
   // Extrair subdomain
   const hostname = window.location.hostname
   const subdomain = hostname.split('.')[0]
-  
+
   // Pular validação para domínios principais
-  const mainDomains = ['www', 'admin', 'api', 'localhost']
-  if (mainDomains.includes(subdomain)) {
+  const mainDomains = ['www', 'admin', 'api', 'localhost', '127']
+  if (mainDomains.includes(subdomain) || subdomain.startsWith('127')) {
     return next()
   }
-  
+
   try {
-    // Verificar se tenant existe
+    // MVP: Validação simples via API
     const tenant = await tenantService.validateTenant(subdomain)
-    
+
     if (!tenant) {
       return next('/tenant-not-found')
     }
-    
-    // Adicionar tenant ao contexto global
+
+    // Adicionar tenant ao contexto da rota
     to.meta.tenant = tenant
     next()
-    
+
   } catch (error) {
     console.error('Erro na validação do tenant:', error)
     next('/error')
@@ -230,63 +286,212 @@ export async function tenantGuard(to, from, next) {
 
 export function authGuard(to, from, next) {
   const token = localStorage.getItem('auth_token')
-  
+
   if (!token && to.meta.requiresAuth) {
     return next('/login')
   }
-  
+
   next()
 }
 ```
 
-### Configuração de Rotas com Guards
+### Store de Tenant (Pinia)
 ```javascript
-// router/index.js
-import { createRouter, createWebHistory } from 'vue-router'
-import { tenantGuard, authGuard } from './guards'
+// stores/tenant.js
+import { defineStore } from 'pinia'
+import { tenantService } from '@/services/tenants'
 
-// Views
-import DashboardView from '@/views/dashboard/DashboardView.vue'
-import StudentsView from '@/views/dashboard/StudentsView.vue'
-import LoginView from '@/views/auth/LoginView.vue'
-import LandingView from '@/views/landing/LandingView.vue'
+export const useTenantStore = defineStore('tenant', {
+  state: () => ({
+    current: null,
+    loading: false,
+    error: null,
+    config: null
+  }),
 
-const routes = [
-  {
-    path: '/',
-    name: 'landing',
-    component: LandingView,
-    beforeEnter: tenantGuard
+  getters: {
+    isLoaded: (state) => state.current !== null,
+    subdomain: (state) => state.current?.subdomain,
+    name: (state) => state.current?.name,
+    colors: (state) => ({
+      primary: state.current?.primary_color || '#3B82F6',
+      secondary: state.current?.secondary_color || '#1E40AF'
+    }),
+    logo: (state) => state.current?.logo_url,
+    isActive: (state) => state.current?.is_active || false
   },
-  {
-    path: '/login',
-    name: 'login',
-    component: LoginView,
-    beforeEnter: tenantGuard
-  },
-  {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: DashboardView,
-    meta: { requiresAuth: true },
-    beforeEnter: [tenantGuard, authGuard]
-  },
-  {
-    path: '/students',
-    name: 'students',
-    component: StudentsView,
-    meta: { requiresAuth: true },
-    beforeEnter: [tenantGuard, authGuard]
+
+  actions: {
+    async loadTenant() {
+      this.loading = true
+      this.error = null
+
+      try {
+        // Extrair subdomain do hostname
+        const hostname = window.location.hostname
+        const subdomain = hostname.split('.')[0]
+
+        // MVP: Buscar tenant via API
+        const tenant = await tenantService.getBySubdomain(subdomain)
+
+        if (!tenant) {
+          throw new Error('Academia não encontrada')
+        }
+
+        this.current = tenant
+        this.applyTheme()
+
+      } catch (error) {
+        this.error = error.message
+        console.error('Erro ao carregar tenant:', error)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async loadConfig() {
+      try {
+        this.config = await tenantService.getCurrentTenantConfig()
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error)
+      }
+    },
+
+    applyTheme() {
+      if (!this.current) return
+
+      // Aplicar CSS custom properties
+      const root = document.documentElement
+      root.style.setProperty('--primary-color', this.colors.primary)
+      root.style.setProperty('--secondary-color', this.colors.secondary)
+
+      // Atualizar favicon
+      if (this.current.favicon_url) {
+        const favicon = document.querySelector('link[rel="icon"]')
+        if (favicon) {
+          favicon.href = this.current.favicon_url
+        }
+      }
+
+      // Atualizar título
+      document.title = `${this.name} - Sistema de Gestão`
+    },
+
+    clearTenant() {
+      this.current = null
+      this.config = null
+      this.error = null
+    }
   }
-]
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes
 })
-
-export default router
 ```
+
+### Componente de Tenant Loading
+```vue
+<!-- components/tenant/TenantLoader.vue -->
+<template>
+  <div v-if="loading" class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p class="text-gray-600">Carregando academia...</p>
+    </div>
+  </div>
+
+  <div v-else-if="error" class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="text-center">
+      <div class="text-red-600 text-6xl mb-4">⚠️</div>
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">Academia não encontrada</h1>
+      <p class="text-gray-600 mb-4">{{ error }}</p>
+      <button
+        @click="retry"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+      >
+        Tentar novamente
+      </button>
+    </div>
+  </div>
+
+  <slot v-else />
+</template>
+
+<script>
+import { computed } from 'vue'
+import { useTenantStore } from '@/stores/tenant'
+
+export default {
+  name: 'TenantLoader',
+  setup() {
+    const tenantStore = useTenantStore()
+
+    const loading = computed(() => tenantStore.loading)
+    const error = computed(() => tenantStore.error)
+
+    const retry = () => {
+      tenantStore.loadTenant()
+    }
+
+    return {
+      loading,
+      error,
+      retry
+    }
+  }
+}
+</script>
+```
+
+### Débito Técnico - Multitenancy V2.0
+
+#### Limitações da Abordagem MVP
+1. **Dependência de API**: Cada carregamento de página faz request para buscar tenant
+2. **Cache Limitado**: Cache apenas no browser, não no servidor
+3. **Personalização Limitada**: Apenas cores e logo básicos
+4. **Performance**: Latência adicional para carregar configurações
+
+#### Migração Planejada para V2.0
+```javascript
+// Estrutura planejada para V2.0 com SSR e cache otimizado
+
+// middleware/tenant.js (Nuxt.js V2.0)
+export default async function ({ route, store, error, redirect }) {
+  // Server-side tenant detection
+  const subdomain = process.server
+    ? req.headers.host.split('.')[0]
+    : window.location.hostname.split('.')[0]
+
+  // Cache otimizado com Redis
+  const tenant = await $cache.get(`tenant:${subdomain}`) ||
+                 await $api.tenants.getBySubdomain(subdomain)
+
+  if (!tenant) {
+    return error({ statusCode: 404, message: 'Academia não encontrada' })
+  }
+
+  // Aplicar configurações no servidor
+  store.commit('tenant/SET_CURRENT', tenant)
+
+  // Injetar CSS no servidor
+  if (process.server) {
+    route.meta.theme = {
+      primary: tenant.primary_color,
+      secondary: tenant.secondary_color
+    }
+  }
+}
+```
+
+#### Benefícios da Migração V2.0
+- **SSR**: Tenant detectado no servidor
+- **Cache Redis**: Performance otimizada
+- **CSS Injection**: Estilos aplicados no servidor
+- **SEO**: Melhor indexação por tenant
+- **Personalização Avançada**: Layouts customizados por tenant
+
+#### Estimativa de Migração V2.0
+- **Tempo**: 2-3 semanas (80-120 horas)
+- **Custo**: R$ 9.600 - R$ 14.400
+- **Complexidade**: Média
+- **Benefícios**: Performance, SEO, UX melhorada
 
 ## Componentes Principais
 
@@ -299,14 +504,14 @@ export default router
     <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
-    
+
     <!-- Main layout -->
     <div v-else class="min-h-screen">
       <AppSidebar :tenant="tenant" />
-      
+
       <div class="lg:pl-72">
         <AppHeader :user="user" :tenant="tenant" />
-        
+
         <main class="py-6">
           <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <slot />
@@ -333,22 +538,22 @@ export default {
   setup() {
     const authStore = useAuthStore()
     const tenantStore = useTenantStore()
-    
+
     const user = computed(() => authStore.user)
     const tenant = computed(() => tenantStore.current)
     const isLoading = computed(() => authStore.loading || tenantStore.loading)
-    
+
     onMounted(async () => {
       // Garantir que tenant e auth estão carregados
       if (!tenant.value) {
         await tenantStore.loadTenant()
       }
-      
+
       if (!user.value) {
         await authStore.checkAuth()
       }
     })
-    
+
     return {
       user,
       tenant,
@@ -442,54 +647,54 @@ export default {
   },
   setup() {
     const studentsStore = useStudentsStore()
-    
+
     const showAddModal = ref(false)
     const searchTerm = ref('')
     const selectedBelt = ref('')
-    
+
     const belts = ['Branca', 'Azul', 'Roxa', 'Marrom', 'Preta']
-    
+
     const students = computed(() => studentsStore.students)
     const loading = computed(() => studentsStore.loading)
     const error = computed(() => studentsStore.error)
-    
+
     const filteredStudents = computed(() => {
       let filtered = students.value
-      
+
       if (searchTerm.value) {
         filtered = filtered.filter(student =>
           student.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
           student.email.toLowerCase().includes(searchTerm.value.toLowerCase())
         )
       }
-      
+
       if (selectedBelt.value) {
         filtered = filtered.filter(student => student.belt_color === selectedBelt.value)
       }
-      
+
       return filtered
     })
-    
+
     const handleEditStudent = (student) => {
       // TODO: Abrir modal de edição
       console.log('Editar aluno:', student)
     }
-    
+
     const handleDeleteStudent = async (student) => {
       if (confirm(`Tem certeza que deseja excluir ${student.name}?`)) {
         await studentsStore.deleteStudent(student.id)
       }
     }
-    
+
     const handleStudentAdded = () => {
       showAddModal.value = false
       studentsStore.loadStudents() // Recarregar lista
     }
-    
+
     onMounted(() => {
       studentsStore.loadStudents()
     })
-    
+
     return {
       showAddModal,
       searchTerm,
@@ -540,9 +745,9 @@ export default function FinancialDashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Dashboard Financeiro</h1>
-      
+
       <FinancialMetrics summary={summary} />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RevenueChart data={summary?.revenueChart} />
         <PaymentStatus data={summary?.paymentStatus} />
@@ -647,9 +852,9 @@ interface ProtectedRouteProps {
   requiredRole?: string;
 }
 
-export default function ProtectedRoute({ 
-  children, 
-  requiredRole 
+export default function ProtectedRoute({
+  children,
+  requiredRole
 }: ProtectedRouteProps) {
   const { user, token } = useAuth();
   const router = useRouter();
@@ -708,7 +913,7 @@ export default function LandingPage({ config }: LandingPageProps) {
   return (
     <div style={{ '--primary': config.theme.primaryColor } as React.CSSProperties}>
       <Header logo={config.theme.logo} />
-      <Hero 
+      <Hero
         title={config.content.heroTitle}
         subtitle={config.content.heroSubtitle}
         image={config.content.heroImage}
@@ -846,4 +1051,4 @@ export const handlers = [
 - **Features**: PWA, SSR, otimizações avançadas
 - **Timeline**: Reescrita planejada pós-MVP
 
-> 📋 **Tarefas detalhadas disponíveis em**: `doc/TASKS.md` 
+> 📋 **Tarefas detalhadas disponíveis em**: `doc/TASKS.md`

@@ -4,13 +4,13 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'backend/docs/**'
-      - 'backend/pyproject.toml'
+      - 'backend-mvp/docs/**'
+      - 'backend-mvp/pyproject.toml'
       - '.github/workflows/docs.yml'
   pull_request:
     branches: [ main ]
     paths:
-      - 'backend/docs/**'
+      - 'backend-mvp/docs/**'
   workflow_dispatch:
 
 permissions:
@@ -42,7 +42,7 @@ jobs:
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        working-directory: backend
+        working-directory: backend-mvp
         run: |
           uv sync --dev
 
@@ -52,7 +52,7 @@ jobs:
           git config --global user.email 'actions@github.com'
 
       - name: Build documentation
-        working-directory: backend
+        working-directory: backend-mvp
         run: |
           cd docs
           uv run mkdocs build --clean --strict
@@ -63,7 +63,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: backend/docs/site
+          path: backend-mvp/docs/site
 
   deploy:
     if: github.ref == 'refs/heads/main'
