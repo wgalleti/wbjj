@@ -20,192 +20,6 @@ config/
 ```
 
 ---
-
-## 🐍 BACKEND SETUP (Django + UV)
-
-### 1. Estrutura e Dependências
-```bash
-# Já criado - verificar se está correto
-cd backend
-
-# Verificar estrutura atual
-ls -la
-
-# Verificar se UV está funcionando
-uv --version
-
-# Instalar dependências de desenvolvimento
-uv add --dev pre-commit
-
-# Ativar pre-commit hooks
-source .venv/bin/activate
-pre-commit install
-
-# Verificar instalação e Django
-uv pip list | head -10
-python manage.py check
-```
-
-### 2. Configuração Django Inicial
-```bash
-# Dentro de backend/ com ambiente ativado
-cd backend
-source .venv/bin/activate
-
-# Criar projeto Django
-python -m django startproject config .
-
-# Mover settings para estrutura modular
-mkdir -p config/settings
-mv config/settings.py config/settings/base.py
-
-# Criar __init__.py para settings
-echo "from .development import *" > config/settings/__init__.py
-```
-
-### 3. Arquivos de Configuração Django
-```bash
-# Criar settings de desenvolvimento
-cat > config/settings/development.py << 'EOF'
-from .base import *
-
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost']
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Temporário para setup inicial
-        'NAME': 'wbjj_dev',
-        'USER': 'wbjj_user',
-        'PASSWORD': 'wbjj_pass',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-
-# NOTA: Será alterado para 'django_tenant_schemas.postgresql_backend' na T004
-
-# Cache Redis para desenvolvimento
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
-    }
-}
-
-# Debug toolbar
-if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
-    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
-    INTERNAL_IPS = ['127.0.0.1']
-EOF
-
-# Criar settings de produção
-cat > config/settings/production.py << 'EOF'
-from .base import *
-from decouple import config, Csv
-
-DEBUG = False
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenant_schemas.postgresql_backend',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', default='5432'),
-    }
-}
-
-# Security settings
-SECURE_SSL_REDIRECT = True
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-EOF
-
-# Criar settings de teste
-cat > config/settings/testing.py << 'EOF'
-from .base import *
-
-DEBUG = True
-DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenant_schemas.postgresql_backend',
-        'NAME': ':memory:',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
-}
-
-PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.MD5PasswordHasher',
-]
-
-# Cache em memória para testes
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
-EOF
-```
-
-### 4. Environment Files
-```bash
-# Criar .env para desenvolvimento
-cat > .env << 'EOF'
-DEBUG=True
-SECRET_KEY=dev-secret-key-change-in-production
-DB_NAME=wbjj_dev
-DB_USER=wbjj_user
-DB_PASSWORD=wbjj_pass
-DB_HOST=localhost
-DB_PORT=5432
-REDIS_URL=redis://localhost:6379/1
-ALLOWED_HOSTS=localhost,127.0.0.1,.localhost
-EOF
-
-# Criar .env.example
-cat > .env.example << 'EOF'
-DEBUG=False
-SECRET_KEY=your-secret-key-here
-DB_NAME=wbjj_prod
-DB_USER=your-db-user
-DB_PASSWORD=your-db-password
-DB_HOST=your-db-host
-DB_PORT=5432
-REDIS_URL=redis://your-redis-host:6379
-ALLOWED_HOSTS=yourdomain.com,.yourdomain.com
-SENTRY_DSN=your-sentry-dsn
-EOF
-```
-
-### 5. Estrutura de Apps Django
-```bash
-# Criar apps Django
-mkdir -p apps/{core,tenants,authentication,students,payments}
-
-# Criar __init__.py para cada app
-for app in core tenants authentication students payments; do
-    touch apps/$app/__init__.py
-    touch apps/$app/models.py
-    touch apps/$app/views.py
-    touch apps/$app/serializers.py
-    touch apps/$app/urls.py
-    touch apps/$app/admin.py
-    touch apps/$app/apps.py
-done
-```
-
----
-
 ## 🌐 FRONTEND SETUP (Vue.js 3)
 
 ### 1. Criar Projeto Vue.js
@@ -405,7 +219,7 @@ cat >> android/app/build.gradle << 'EOF'
 
 android {
     compileSdkVersion 34
-    
+
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 34
@@ -452,7 +266,7 @@ services:
 
   # Backend Django
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile.dev
     ports:
@@ -518,7 +332,7 @@ EXPOSE 8000
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 EOF
 
-# Frontend Dockerfile  
+# Frontend Dockerfile
 cat > frontend/Dockerfile.dev << 'EOF'
 FROM node:18-alpine
 
@@ -727,7 +541,7 @@ cd backend && uv add <package>       # Adicionar dependência
 pytest                              # Executar testes
 ruff check . && black .             # Linting e formatação
 
-# Frontend  
+# Frontend
 cd frontend && npm install <package> # Adicionar dependência
 npm run test                        # Executar testes
 npm run lint                        # Linting
@@ -808,7 +622,7 @@ chmod +x scripts/setup.sh
 - [ ] `pre-commit run --all-files` executa
 - [ ] Estrutura de apps criada
 
-### Frontend  
+### Frontend
 - [ ] `cd frontend && npm run dev` inicia servidor
 - [ ] Tailwind configurado
 - [ ] Shadcn funcionando
@@ -841,4 +655,4 @@ Após executar estes scripts:
 3. **Validar que todos os serviços estão funcionando**
 4. **Commit inicial do setup**
 
-**Total estimado**: 4 horas conforme T001 
+**Total estimado**: 4 horas conforme T001
